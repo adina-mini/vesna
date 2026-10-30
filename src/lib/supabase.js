@@ -232,3 +232,210 @@ export async function listRsvpsForInvitation(invitationId) {
     .filter((r) => r.invitation_id === invitationId)
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
+
+const SETTINGS_KEY = 'vesna_platform_settings';
+
+const DEFAULT_SETTINGS = {
+  conciergeWhatsApp: '+92 300 8472911',
+  conciergeEmail: 'concierge@vesna.atelier',
+  bannerActive: true,
+  bannerMessage: 'Winter Wedding Season: Enjoy Complimentary 3D Gold Foil Shimmer on All 15 Suites',
+  bannerLink: '/templates',
+};
+
+/**
+ * Super Admin: List all invitations platform-wide
+ */
+export async function listAllInvitationsForAdmin() {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('invitations')
+      .select('*')
+      .order('updated_at', { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      return data;
+    }
+  }
+
+  // Fallback to local store with initial demo data if empty
+  let store = getStore();
+  if (Object.keys(store).length === 0) {
+    // Seed initial realistic invitations for demo/dev exploration
+    const initialSeed = {
+      'inv_fatima_sharjeel': {
+        id: 'inv_fatima_sharjeel',
+        template_id: 'royal-burgundy-barat',
+        title: "Fatima & Sharjeel's Grand Barat",
+        event_type: 'wedding',
+        status: 'published',
+        published_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
+        updated_at: new Date(Date.now() - 3600000 * 12).toISOString(),
+        data: {
+          bride_name: 'Fatima Noor',
+          groom_name: 'Sharjeel Khan',
+          event_title: 'The Grand Barat Ceremony',
+          event_date_display: 'Saturday, November 7, 2026',
+          venue_name: 'The Grand Palm Royale, Lahore',
+          hero_image: '/assets/barat-stage-venue.jpg',
+        },
+        media: {},
+      },
+      'inv_ayesha_hamza': {
+        id: 'inv_ayesha_hamza',
+        template_id: 'noor-walima',
+        title: "Ayesha & Hamza's Walima Reception",
+        event_type: 'wedding',
+        status: 'published',
+        published_at: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
+        updated_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+        data: {
+          bride_name: 'Ayesha Siddiqui',
+          groom_name: 'Hamza Tariq',
+          event_title: 'The Walima Reception',
+          event_date_display: 'Sunday, November 8, 2026',
+          venue_name: 'Pearl Continental Crystal Ballroom',
+          hero_image: '/assets/walima-venue.jpg',
+        },
+        media: {},
+      },
+      'inv_zara_mehndi': {
+        id: 'inv_zara_mehndi',
+        template_id: 'festive-mehndi',
+        title: "Zara's Rung-e-Mehndi",
+        event_type: 'wedding',
+        status: 'draft',
+        published_at: null,
+        updated_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+        data: {
+          bride_name: 'Zara Ahmed',
+          groom_name: 'Daniyal Malik',
+          event_title: 'Rung-e-Mehndi & Sangeet',
+          event_date_display: 'Friday, November 6, 2026',
+          venue_name: 'Haveli Barood Khana, Lahore',
+          hero_image: '/assets/qawwali-hero.jpg',
+        },
+        media: {},
+      },
+    };
+    setStore(initialSeed);
+    store = initialSeed;
+  }
+
+  return Object.values(store).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+}
+
+/**
+ * Super Admin: Toggle or set invitation status (published / draft / archived)
+ */
+export async function updateInvitationStatus(id, newStatus) {
+  if (isSupabaseConfigured && supabase) {
+    const payload = {
+      status: newStatus,
+      updated_at: new Date().toISOString(),
+    };
+    if (newStatus === 'published') {
+      payload.published_at = new Date().toISOString();
+    }
+    await supabase.from('invitations').update(payload).eq('id', id);
+  }
+
+  const store = getStore();
+  if (store[id]) {
+    store[id].status = newStatus;
+    store[id].updated_at = new Date().toISOString();
+    if (newStatus === 'published' && !store[id].published_at) {
+      store[id].published_at = new Date().toISOString();
+    }
+    setStore(store);
+    return store[id];
+  }
+  return null;
+}
+
+/**
+ * Super Admin: List all RSVPs platform-wide
+ */
+export async function listAllRsvpsForAdmin() {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('rsvps')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      return data;
+    }
+  }
+
+  let store = getRsvpStore();
+  if (store.length === 0) {
+    const demoRsvps = [
+      {
+        id: 'rsvp_demo_1',
+        invitation_id: 'inv_fatima_sharjeel',
+        guest_name: 'Tariq & Family',
+        guest_phone: '+92 321 4455667',
+        attendance: 'attending',
+        guest_count: 4,
+        notes: 'Delighted to attend the Barat celebrations!',
+        created_at: new Date(Date.now() - 3600000 * 18).toISOString(),
+      },
+      {
+        id: 'rsvp_demo_2',
+        invitation_id: 'inv_fatima_sharjeel',
+        guest_name: 'Dr. Asad Mansoor',
+        guest_phone: '+92 300 8912345',
+        attendance: 'attending',
+        guest_count: 2,
+        notes: 'Warmest congratulations to both families.',
+        created_at: new Date(Date.now() - 3600000 * 22).toISOString(),
+      },
+      {
+        id: 'rsvp_demo_3',
+        invitation_id: 'inv_ayesha_hamza',
+        guest_name: 'Usman Qureshi',
+        guest_phone: '+92 333 1122334',
+        attendance: 'attending',
+        guest_count: 2,
+        notes: null,
+        created_at: new Date(Date.now() - 3600000 * 8).toISOString(),
+      },
+    ];
+    setRsvpStore(demoRsvps);
+    store = demoRsvps;
+  }
+
+  return store.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+}
+
+/**
+ * Super Admin: Get platform settings
+ */
+export function getPlatformSettings() {
+  if (typeof window !== 'undefined') {
+    try {
+      const data = localStorage.getItem(SETTINGS_KEY);
+      return data ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) } : DEFAULT_SETTINGS;
+    } catch (e) {
+      return DEFAULT_SETTINGS;
+    }
+  }
+  return DEFAULT_SETTINGS;
+}
+
+/**
+ * Super Admin: Save platform settings
+ */
+export function savePlatformSettings(newSettings) {
+  if (typeof window !== 'undefined') {
+    try {
+      const merged = { ...DEFAULT_SETTINGS, ...newSettings };
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
+      return merged;
+    } catch (e) {
+      return DEFAULT_SETTINGS;
+    }
+  }
+  return DEFAULT_SETTINGS;
+}
