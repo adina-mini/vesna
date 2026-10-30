@@ -151,7 +151,7 @@ export default function HomePage() {
               Simple &amp; Bespoke
             </span>
             <h2 className="font-serif text-3xl sm:text-5xl font-normal text-espresso">
-              How Dawatnama Works
+              How VESNA Works
             </h2>
             <p className="font-sans text-sm sm:text-base text-espresso/70 max-w-xl mx-auto mt-3 leading-relaxed">
               Crafting a regal digital invitation requires no design skills and takes under 3 minutes.
@@ -250,7 +250,7 @@ export default function HomePage() {
                   {/* Mock phone status bar */}
                   <div className="bg-sand-100 px-6 py-2 flex items-center justify-between text-[11px] font-sans text-espresso/60 border-b border-sand-200">
                     <span>9:41</span>
-                    <span className="font-medium text-espresso/80">dawatnama.com</span>
+                    <span className="font-medium text-espresso/80">vesna.atelier</span>
                     <span>100%</span>
                   </div>
 

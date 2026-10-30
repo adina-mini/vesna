@@ -82,3 +82,18 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* 3D Atmospheric Gold Dust Particles */
+@keyframes goldFloatSlow {
+  0% { transform: translate3d(0, 0, 0) scale(0.85); opacity: 0.25; }
+  50% { transform: translate3d(10px, -28px, 0) scale(1.15); opacity: 0.8; }
+  100% { transform: translate3d(-8px, -56px, 0) scale(0.9); opacity: 0.2; }
+}
+
+.gold-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFF2B2 20%, #D4AF37 60%, transparent 80%);
+  pointer-events: none;
+  animation: goldFloatSlow 6s ease-in-out infinite alternate;
+}

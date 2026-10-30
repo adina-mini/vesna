@@ -1,19 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
   MapPin,
   Calendar,
-  Volume2,
   Share2,
   CheckCircle2,
   Compass,
   ArrowRight,
   ExternalLink,
   Lock,
-  Heart
+  Heart,
+  Users,
+  ShieldCheck,
+  Check
 } from 'lucide-react';
 
 const PREVIEW_THEMES = {
@@ -70,14 +72,86 @@ const PREVIEW_THEMES = {
   }
 };
 
+// 12 Ambient floating gold dust particles for spatial depth
+const GOLD_PARTICLES = [
+  { top: '10%', left: '15%', size: '6px', delay: '0s', duration: '5.5s' },
+  { top: '25%', left: '8%', size: '4px', delay: '1.2s', duration: '6.8s' },
+  { top: '65%', left: '12%', size: '7px', delay: '0.8s', duration: '5.2s' },
+  { top: '80%', left: '20%', size: '5px', delay: '2.1s', duration: '7.1s' },
+  { top: '15%', right: '14%', size: '5px', delay: '0.4s', duration: '6.2s' },
+  { top: '35%', right: '9%', size: '7px', delay: '1.8s', duration: '5.8s' },
+  { top: '70%', right: '15%', size: '4px', delay: '2.5s', duration: '7.5s' },
+  { top: '85%', right: '22%', size: '6px', delay: '1.0s', duration: '6.0s' },
+  { top: '5%', left: '48%', size: '5px', delay: '1.5s', duration: '6.5s' },
+  { top: '92%', left: '52%', size: '4px', delay: '0.7s', duration: '5.9s' },
+];
+
 export default function HeroMockup() {
   const [activeTab, setActiveTab] = useState('barat');
+  const [isWaxUnsealed, setIsWaxUnsealed] = useState(false);
   const current = PREVIEW_THEMES[activeTab];
+
+  // 3D Gyroscope / Interactive Mouse Perspective State
+  const cardRef = useRef(null);
+  const [transformStyle, setTransformStyle] = useState(
+    'perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)'
+  );
+  const [lightPos, setLightPos] = useState({ x: 50, y: 30 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Calculate natural 3D tilt angles (max +/- 10 deg)
+    const rotX = -((y - centerY) / centerY) * 10;
+    const rotY = ((x - centerX) / centerX) * 10;
+
+    setTransformStyle(
+      `perspective(1200px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale3d(1.025, 1.025, 1.025)`
+    );
+    setLightPos({
+      x: ((x / rect.width) * 100).toFixed(1),
+      y: ((y / rect.height) * 100).toFixed(1),
+    });
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setTransformStyle('perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+  };
 
   return (
     <div className="relative w-full max-w-5xl mx-auto mt-12 mb-4 px-2 sm:px-4">
-      {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] sm:w-[700px] h-[350px] bg-gradient-to-r from-gold-500/15 via-burgundy/15 to-sand-300/30 blur-[120px] rounded-full pointer-events-none -z-10" />
+      {/* 3D Atmospheric Ambient Glow & Floating Gold Dust Particles */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] sm:w-[760px] h-[400px] bg-gradient-to-r from-gold-500/20 via-burgundy/15 to-sand-300/35 blur-[130px] rounded-full pointer-events-none -z-10" />
+
+      {/* Floating Gold Particles in 3D Space */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden -z-5">
+        {GOLD_PARTICLES.map((p, idx) => (
+          <span
+            key={idx}
+            className="gold-particle"
+            style={{
+              top: p.top,
+              left: p.left,
+              right: p.right,
+              width: p.size,
+              height: p.size,
+              animationDelay: p.delay,
+              animationDuration: p.duration,
+            }}
+          />
+        ))}
+      </div>
 
       {/* Interactive Theme Switcher Tabs */}
       <div className="flex items-center justify-center gap-2 sm:gap-3 mb-8">
@@ -86,7 +160,10 @@ export default function HeroMockup() {
           return (
             <button
               key={theme.id}
-              onClick={() => setActiveTab(theme.id)}
+              onClick={() => {
+                setActiveTab(theme.id);
+                setIsWaxUnsealed(false);
+              }}
               className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-sans uppercase tracking-wider font-semibold transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-xs ${
                 isActive
                   ? 'bg-espresso text-paper shadow-md scale-102 ring-2 ring-espresso/20'
@@ -110,7 +187,7 @@ export default function HeroMockup() {
         })}
       </div>
 
-      {/* Main Composition: Center Phone Frame flanked by Floating Glass Feature Badges */}
+      {/* Main Composition: Center 3D Smartphone Frame flanked by Floating Glass Badges */}
       <div className="relative flex items-center justify-center">
         {/* ================================================================= */}
         {/* LEFT FLOATING BADGE (Desktop)                                     */}
@@ -131,38 +208,53 @@ export default function HeroMockup() {
             </p>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sand-100 border border-sand-200 text-[10px] font-sans text-olive font-medium">
               <CheckCircle2 className="w-3 h-3 text-olive" />
-              <span>Surah Ar-Rum &amp; Sunnah Dua</span>
+              <span>Surah Ar-Rum • Sunnah Dua</span>
             </div>
           </div>
 
-          {/* Card 2: Ambient Music Feature */}
+          {/* Card 2: Live Guest Attendance / RSVP (Replaced audio per voice skip) */}
           <div className="p-4 rounded-2xl bg-paper/95 backdrop-blur-md border border-sand-300/80 shadow-lg text-left transform rotate-1 hover:rotate-0 transition-transform duration-300">
             <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-6 h-6 rounded-full bg-burgundy/10 flex items-center justify-center text-burgundy">
-                <Volume2 className="w-3.5 h-3.5" />
+              <div className="w-6 h-6 rounded-full bg-gold-500/10 flex items-center justify-center text-gold-600">
+                <Users className="w-3.5 h-3.5" />
               </div>
               <span className="font-sans text-[11px] font-bold uppercase tracking-wider text-espresso">
-                Ambient Mehfil
+                Live RSVP Tracking
               </span>
             </div>
             <p className="text-[11px] font-sans text-espresso/70 leading-relaxed mb-2">
-              Autoplay soft shehnai or sufi qawwali with one-tap guest mute control.
+              Instant guest confirmation, headcount tally, and dietary preferences synced in real-time.
             </p>
-            <div className="flex items-center gap-1">
-              <span className="w-1 h-3 bg-burgundy rounded-full animate-pulse" />
-              <span className="w-1 h-4 bg-burgundy rounded-full animate-pulse delay-75" />
-              <span className="w-1 h-2 bg-burgundy rounded-full animate-pulse delay-150" />
-              <span className="text-[10px] font-sans text-burgundy font-semibold ml-1.5">Now Playing</span>
+            <div className="flex items-center justify-between text-[10px] font-sans text-espresso/80 font-medium pt-1 border-t border-sand-200">
+              <span className="text-olive font-semibold">184 Attending</span>
+              <span className="text-espresso/50">92% Response Rate</span>
             </div>
           </div>
         </div>
 
         {/* ================================================================= */}
-        {/* CENTER LUXURY SMARTPHONE FRAME                                    */}
+        {/* CENTER 3D GYROSCOPE SMARTPHONE FRAME                             */}
         {/* ================================================================= */}
-        <div className="relative w-full max-w-[340px] sm:max-w-[380px] z-10">
-          {/* External Hardware Shell with realistic bezel & gold accent glow */}
-          <div className="relative rounded-[48px] bg-[#1a1714] p-3 sm:p-3.5 shadow-[0_25px_60px_-15px_rgba(28,24,21,0.35),0_0_40px_rgba(217,179,90,0.15)] border-2 border-sand-300/30">
+        <div
+          ref={cardRef}
+          onMouseMove={handleMouseMove}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          className="relative w-full max-w-[340px] sm:max-w-[380px] z-10 transition-transform duration-150 ease-out cursor-pointer will-change-transform"
+          style={{ transform: transformStyle }}
+        >
+          {/* External Hardware Shell with 3D shadow and gold accent border */}
+          <div className="relative rounded-[48px] bg-[#1a1714] p-3 sm:p-3.5 shadow-[0_30px_70px_-15px_rgba(28,24,21,0.45),0_0_45px_rgba(217,179,90,0.22)] border-2 border-sand-300/30 overflow-hidden">
+            {/* Dynamic 3D Specular Light & Gold Foil Shimmer Layer */}
+            <div
+              className="pointer-events-none absolute inset-0 z-40 transition-opacity duration-300"
+              style={{
+                opacity: isHovered ? 0.38 : 0.08,
+                background: `radial-gradient(circle at ${lightPos.x}% ${lightPos.y}%, rgba(255, 235, 160, 0.75) 0%, rgba(212, 175, 55, 0.25) 35%, transparent 65%)`,
+                mixBlendMode: 'color-dodge',
+              }}
+            />
+
             {/* Screen Glass Bezel */}
             <div className="relative rounded-[38px] bg-ivory overflow-hidden border border-sand-300/60 flex flex-col h-[580px] sm:h-[640px]">
               {/* Dynamic Island / Speaker Notch Bar */}
@@ -175,14 +267,43 @@ export default function HeroMockup() {
                 </div>
                 <div className="flex items-center gap-1.5 text-espresso/80">
                   <Lock className="w-2.5 h-2.5 text-olive" />
-                  <span className="text-[10px] font-mono tracking-tight text-espresso/70">dawatnama</span>
+                  <span className="text-[10px] font-mono tracking-tight text-espresso/70">vesna.atelier</span>
                 </div>
               </div>
 
               {/* Invitation Viewport (Scrollable with hidden scrollbar for luxury app feel) */}
               <div className="flex-1 overflow-y-auto no-scrollbar relative bg-[#faf8f5]">
+                {/* Interactive 3D Wax Seal Stamp at Top */}
+                <div className="pt-5 pb-2 text-center">
+                  <button
+                    onClick={() => setIsWaxUnsealed(!isWaxUnsealed)}
+                    className="inline-flex items-center gap-2 group cursor-pointer focus:outline-hidden"
+                    title="Click to break or reset wax seal"
+                  >
+                    <div
+                      className={`relative w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-500 shadow-md ${
+                        isWaxUnsealed
+                          ? 'bg-gradient-to-br from-olive/80 to-olive-dark text-paper border-olive scale-95'
+                          : 'bg-gradient-to-br from-[#8A1C14] via-[#B22222] to-[#5C0600] text-sand-100 border-[#FFD700]/40 hover:scale-105 shadow-[0_4px_12px_rgba(138,28,20,0.4)]'
+                      }`}
+                    >
+                      {isWaxUnsealed ? (
+                        <Check className="w-4 h-4 text-paper animate-fade-in" />
+                      ) : (
+                        <span className="font-serif font-bold text-xs tracking-wider text-[#FFEDB3] drop-shadow-sm">
+                          V
+                        </span>
+                      )}
+                      <div className="absolute inset-0 rounded-full border border-sand-100/30 pointer-events-none" />
+                    </div>
+                    <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.2em] text-espresso/70 group-hover:text-gold-600 transition-colors">
+                      {isWaxUnsealed ? 'Sealed & Verified' : 'Tap Wax Seal'}
+                    </span>
+                  </button>
+                </div>
+
                 {/* 1. Header Architectural Floral Border */}
-                <div className="pt-6 pb-3 px-4 text-center">
+                <div className="pb-3 px-4 text-center">
                   {/* Event Category Tag */}
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans uppercase tracking-[0.18em] font-semibold mb-3 border shadow-2xs transition-colors duration-300">
                     <Sparkles className="w-3 h-3 text-gold-500" />
@@ -218,7 +339,7 @@ export default function HeroMockup() {
                   </div>
                 </div>
 
-                {/* 3. Hero Visual Window (The Grand Venue / Ensemble Artwork) */}
+                {/* 3. Hero Visual Window (The Grand Venue Artwork) */}
                 <div className="px-4 py-3">
                   <div className="relative h-44 sm:h-52 rounded-2xl overflow-hidden border border-sand-300 shadow-sm group">
                     <img
@@ -227,12 +348,12 @@ export default function HeroMockup() {
                       className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-espresso/60 via-transparent to-transparent" />
-                    
-                    {/* Live Audio Indicator Pill inside image */}
+
+                    {/* Verified Suite Badge (Cleaned of audio) */}
                     <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-paper/90 backdrop-blur-md border border-sand-300 shadow-xs flex items-center gap-1.5">
-                      <Volume2 className="w-3 h-3 text-burgundy" />
+                      <ShieldCheck className="w-3 h-3 text-olive" />
                       <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-espresso">
-                        Live Audio
+                        Atelier Suite
                       </span>
                     </div>
 
@@ -248,35 +369,51 @@ export default function HeroMockup() {
 
                 {/* 4. Live Countdown Widget */}
                 <div className="px-4 py-2">
-                  <div className="p-3 rounded-2xl bg-paper border border-sand-200 shadow-2xs">
-                    <span className="font-sans text-[10px] uppercase tracking-widest text-espresso/65 font-medium block text-center mb-2">
+                  <div className="p-3 rounded-2xl bg-sand-100/80 border border-sand-200/80 text-center">
+                    <span className="font-sans text-[9px] uppercase tracking-[0.25em] text-olive font-semibold block mb-2">
                       Celebration Countdown
                     </span>
-                    <div className="grid grid-cols-4 gap-1.5 text-center">
-                      <div className="bg-sand-100/80 p-1.5 rounded-xl">
-                        <span className="font-serif text-base font-bold text-espresso block">18</span>
-                        <span className="text-[8px] uppercase tracking-wider text-espresso/60">Days</span>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      <div className="p-1.5 rounded-xl bg-paper border border-sand-200 shadow-2xs">
+                        <span className="font-serif text-base sm:text-lg font-bold text-espresso block leading-tight">
+                          18
+                        </span>
+                        <span className="text-[8px] font-sans uppercase tracking-wider text-espresso/60">
+                          Days
+                        </span>
                       </div>
-                      <div className="bg-sand-100/80 p-1.5 rounded-xl">
-                        <span className="font-serif text-base font-bold text-espresso block">06</span>
-                        <span className="text-[8px] uppercase tracking-wider text-espresso/60">Hours</span>
+                      <div className="p-1.5 rounded-xl bg-paper border border-sand-200 shadow-2xs">
+                        <span className="font-serif text-base sm:text-lg font-bold text-espresso block leading-tight">
+                          06
+                        </span>
+                        <span className="text-[8px] font-sans uppercase tracking-wider text-espresso/60">
+                          Hours
+                        </span>
                       </div>
-                      <div className="bg-sand-100/80 p-1.5 rounded-xl">
-                        <span className="font-serif text-base font-bold text-espresso block">42</span>
-                        <span className="text-[8px] uppercase tracking-wider text-espresso/60">Mins</span>
+                      <div className="p-1.5 rounded-xl bg-paper border border-sand-200 shadow-2xs">
+                        <span className="font-serif text-base sm:text-lg font-bold text-espresso block leading-tight">
+                          42
+                        </span>
+                        <span className="text-[8px] font-sans uppercase tracking-wider text-espresso/60">
+                          Mins
+                        </span>
                       </div>
-                      <div className="bg-sand-100/80 p-1.5 rounded-xl">
-                        <span className="font-serif text-base font-bold text-espresso block">15</span>
-                        <span className="text-[8px] uppercase tracking-wider text-espresso/60">Secs</span>
+                      <div className="p-1.5 rounded-xl bg-paper border border-sand-200 shadow-2xs">
+                        <span className="font-serif text-base sm:text-lg font-bold text-burgundy block leading-tight">
+                          15
+                        </span>
+                        <span className="text-[8px] font-sans uppercase tracking-wider text-espresso/60">
+                          Secs
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* 5. Date & Quick Action Buttons */}
-                <div className="px-4 py-3 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-sans text-espresso/80 px-1">
-                    <span className="flex items-center gap-1">
+                <div className="p-4 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-sans text-espresso/80 px-1 py-1">
+                    <span className="flex items-center gap-1.5 font-medium">
                       <Calendar className="w-3.5 h-3.5 text-olive" />
                       {current.date}
                     </span>
@@ -371,7 +508,7 @@ export default function HeroMockup() {
       <div className="mt-8 text-center">
         <p className="font-sans text-xs text-espresso/60 flex items-center justify-center gap-2">
           <Sparkles className="w-3.5 h-3.5 text-gold-500" />
-          <span>Tap the tabs above to explore different event moods and suites in real-time</span>
+          <span>Move cursor over the phone for 3D perspective • Tap tabs above to explore suites</span>
         </p>
       </div>
     </div>
