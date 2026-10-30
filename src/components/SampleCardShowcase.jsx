@@ -44,9 +44,9 @@ export default function SampleCardShowcase({ template }) {
   return (
     <div className="w-full flex flex-col items-center">
       {/* Educational Banner with Replay Control */}
-      <div className="w-full max-w-[460px] mb-4 p-4 rounded-2xl bg-paper border border-sand-300 text-espresso shadow-xs">
+      <div className="w-full max-w-[460px] mb-5 p-4 rounded-[28px] bg-paper border border-sand-300/90 text-espresso shadow-atelier">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-sand-100 text-olive flex-shrink-0 mt-0.5 border border-sand-200">
+          <div className="p-2.5 rounded-2xl bg-sand-100 text-olive flex-shrink-0 mt-0.5 border border-sand-200">
             <Lock className="w-4 h-4 text-olive" />
           </div>
           <div className="flex-1">
@@ -55,8 +55,8 @@ export default function SampleCardShowcase({ template }) {
                 <span className="font-serif text-xs font-bold uppercase tracking-wider text-espresso">
                   Live Sample Experience
                 </span>
-                <span className="text-[10px] font-sans px-2 py-0.5 rounded-full bg-sand-100 text-espresso/70 border border-sand-300 uppercase font-medium">
-                  Opening & Card
+                <span className="text-[10px] font-sans px-2.5 py-0.5 rounded-full bg-sand-100 text-espresso/75 border border-sand-300 uppercase font-semibold">
+                  Royal Reveal
                 </span>
               </div>
               <button
@@ -65,25 +65,25 @@ export default function SampleCardShowcase({ template }) {
                   setCardRevealed(false);
                   setReplayKey((k) => k + 1);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-espresso hover:bg-espresso-dark text-paper text-[10px] font-sans font-medium uppercase tracking-wider shadow-xs transition-all hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-espresso hover:bg-espresso-dark text-paper text-[10px] font-sans font-semibold uppercase tracking-wider shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer ring-1 ring-gold-500/20"
               >
                 <RotateCcw className="w-3 h-3 text-sand-300" />
-                <span>Replay Opening</span>
+                <span>Replay Reveal</span>
               </button>
             </div>
             <p className="font-sans text-[11px] text-espresso/70 leading-relaxed">
-              This preview shows the exact guest experience (first the royal opening reveal, then the card itself). Your custom text and uploaded photos will generate upon clicking <strong>Publish</strong>.
+              This interactive frame previews the full guest experience (royal opening ring &rarr; card reveal). Your personalized text and portraits will appear upon clicking <strong>Publish</strong>.
             </p>
           </div>
         </div>
       </div>
 
-      {/* RENDER ORIGINAL SAMPLE WITH CONTAINED RIGHT-SIDE OPENING REVEAL */}
+      {/* RENDER ORIGINAL SAMPLE WITH LUXURY DEVICE BEZEL */}
       <div
-        className={`w-full relative pointer-events-auto rounded-[32px] sm:rounded-[36px] transition-all duration-700 ${
+        className={`w-full max-w-[460px] relative pointer-events-auto rounded-[40px] border-2 border-sand-300/80 bg-paper shadow-2xl transition-all duration-700 overflow-hidden ${
           cardRevealed
-            ? 'h-auto overflow-visible'
-            : 'h-[680px] overflow-hidden shadow-2xl'
+            ? 'h-auto'
+            : 'h-[680px]'
         }`}
       >
         {/* Scoped Right-Side Intro Gate */}

@@ -17,6 +17,33 @@
   background: #C2A387;
 }
 
+/* Luxury Input Field Treatment */
+.atelier-input {
+  background-color: #FFFDF9;
+  border: 1px solid #E8D8C5;
+  color: #45352F;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.atelier-input:focus {
+  border-color: #77785A;
+  box-shadow: 0 0 0 3px rgba(119, 120, 90, 0.15);
+  outline: none;
+}
+
+/* Luxury Glass Surface */
+.glass-atelier {
+  background: rgba(255, 253, 249, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(232, 216, 197, 0.8);
+}
+
+/* Subtle Golden Border Glow */
+.gold-border-glow {
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 20px -3px rgba(212, 175, 55, 0.15);
+}
+
 /* Metallic Foil Shimmer */
 .gold-foil-text, .foil-gold {
   background: linear-gradient(135deg, #F5E8BA 0%, #D4AF37 35%, #FFF2C2 50%, #A98018 75%, #F5E8BA 100%);

@@ -110,6 +110,13 @@ module.exports = {
         amiri: ['"Amiri"', 'serif'],
         sans: ['"Montserrat"', 'sans-serif'],
       },
+      boxShadow: {
+        'atelier': '0 10px 30px -5px rgba(69, 53, 47, 0.08), 0 0 0 1px rgba(232, 216, 197, 0.6)',
+        'atelier-hover': '0 20px 40px -10px rgba(69, 53, 47, 0.14), 0 0 0 1px rgba(212, 175, 55, 0.35)',
+        'atelier-card': '0 4px 20px -2px rgba(69, 53, 47, 0.05), 0 0 0 1px rgba(232, 216, 197, 0.5)',
+        'gold-glow': '0 0 35px -5px rgba(212, 175, 55, 0.25)',
+        'wine-glow': '0 15px 40px -10px rgba(120, 62, 70, 0.22)',
+      },
       animation: {
         'shimmer': 'shimmer 4s linear infinite',
         'float-slow': 'floatSlow 6s ease-in-out infinite',

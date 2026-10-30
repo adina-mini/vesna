@@ -164,34 +164,84 @@ export default function DashboardPage() {
   // =========================================================================
   const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Host';
 
+  // Overall aggregate counts across all user's invitations
+  const totalInvitationsCount = invitations.length;
+  const totalRsvpsCount = Object.values(rsvpsMap).reduce((acc, curr) => acc + (curr?.length || 0), 0);
+  const totalConfirmedGuestsCount = Object.values(rsvpsMap).reduce((acc, list) => {
+    return acc + (list || [])
+      .filter((r) => r.attendance === 'attending')
+      .reduce((sum, r) => sum + (parseInt(r.guest_count, 10) || 1), 0);
+  }, 0);
+
   return (
-    <div className="py-12 sm:py-16 px-4 sm:px-6 max-w-6xl mx-auto">
+    <div className="py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto">
       {/* Top Welcome Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-8 mb-8 border-b border-sand-300">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-8 mb-8 border-b border-sand-300">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-sans text-xs uppercase tracking-[0.25em] text-olive font-semibold">
-              Host Studio Portfolio
-            </span>
-            <span className="text-[10px] font-sans px-2.5 py-0.5 rounded-full bg-sand-100 text-olive border border-sand-300 font-medium">
-              Active Host
-            </span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-paper border border-sand-300 text-olive text-[11px] font-sans uppercase tracking-[0.2em] font-semibold mb-2 shadow-2xs">
+            <Sparkles className="w-3 h-3 text-gold-500" />
+            <span>Host Sanctuary Suite</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-normal text-espresso">
             Welcome back, {userDisplayName}
           </h1>
           <p className="font-sans text-xs sm:text-sm text-espresso/70 mt-1">
-            Signed in as <span className="font-medium text-espresso">{user.email}</span> &bull; Manage your cards and guest RSVPs.
+            Signed in as <span className="font-medium text-espresso">{user.email}</span> &bull; Manage your digital invitation portfolio and live guest RSVPs.
           </p>
         </div>
 
         <Link
           href="/create"
-          className="px-6 py-3 rounded-full bg-espresso hover:bg-espresso-dark text-paper font-sans text-xs font-semibold uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98"
+          className="px-6 py-3 rounded-full bg-espresso hover:bg-espresso-dark text-paper font-sans text-xs font-semibold uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98 ring-1 ring-gold-500/30"
         >
           <PlusCircle className="w-4 h-4 text-sand-300" />
-          <span>New Invitation</span>
+          <span>New Invitation Suite</span>
         </Link>
+      </div>
+
+      {/* Aggregate Host Metrics KPI Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+        <div className="p-6 rounded-[28px] bg-paper border border-sand-300/80 shadow-atelier flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-sand-100 flex items-center justify-center text-espresso border border-sand-200">
+            <Layers className="w-6 h-6 text-olive" />
+          </div>
+          <div>
+            <span className="font-serif text-2xl sm:text-3xl font-bold text-espresso block">
+              {totalInvitationsCount}
+            </span>
+            <span className="font-sans text-[11px] uppercase tracking-wider text-espresso/60 font-semibold">
+              Total Invitation Suites
+            </span>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-[28px] bg-paper border border-sand-300/80 shadow-atelier flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-800 border border-emerald-200">
+            <UserCheck className="w-6 h-6 text-emerald-700" />
+          </div>
+          <div>
+            <span className="font-serif text-2xl sm:text-3xl font-bold text-espresso block">
+              {totalConfirmedGuestsCount}
+            </span>
+            <span className="font-sans text-[11px] uppercase tracking-wider text-espresso/60 font-semibold">
+              Confirmed Guests Attending
+            </span>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-[28px] bg-paper border border-sand-300/80 shadow-atelier flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-sand-100 flex items-center justify-center text-espresso border border-sand-200">
+            <Users className="w-6 h-6 text-olive" />
+          </div>
+          <div>
+            <span className="font-serif text-2xl sm:text-3xl font-bold text-espresso block">
+              {totalRsvpsCount}
+            </span>
+            <span className="font-sans text-[11px] uppercase tracking-wider text-espresso/60 font-semibold">
+              Total RSVP Responses
+            </span>
+          </div>
+        </div>
       </div>
 
       {loading ? (

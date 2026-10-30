@@ -203,33 +203,41 @@ function CreatePageInner() {
     <div className="py-10 px-4 sm:px-6 max-w-7xl mx-auto">
       {/* Top Header & Template Switcher */}
       <div className="mb-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-sand-300">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-sand-300">
           <div>
-            <span className="font-sans text-xs uppercase tracking-[0.25em] text-olive font-semibold block mb-1">
-              Customization Studio
-            </span>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-espresso">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper border border-sand-300 text-olive text-[11px] font-sans uppercase tracking-[0.2em] font-semibold mb-2 shadow-2xs">
+              <Sparkles className="w-3 h-3 text-gold-500" />
+              <span>Studio Atelier</span>
+            </div>
+            <h1 className="font-serif text-3xl sm:text-4xl font-normal text-espresso tracking-tight">
               Personalize Your Invitation
             </h1>
+            <p className="font-sans text-xs sm:text-sm text-espresso/70 mt-1">
+              Currently editing <span className="font-semibold text-espresso">{template.name}</span> ({template.categoryLabel})
+            </p>
           </div>
 
           {/* Template Selector Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
             <span className="font-sans text-xs text-espresso/70 whitespace-nowrap hidden sm:inline font-medium">
-              Active Design:
+              Switch Suite:
             </span>
             <div className="flex items-center gap-2">
               {allTemplates.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => handleTemplateChange(t.id)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-sans tracking-wide uppercase transition-all whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-full text-xs font-sans tracking-wide uppercase transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                     selectedTemplateId === t.id
-                      ? 'bg-espresso text-paper font-semibold shadow-xs'
-                      : 'bg-paper text-espresso/70 hover:text-espresso border border-sand-300'
+                      ? 'bg-espresso text-paper font-semibold shadow-xs ring-1 ring-gold-500/30'
+                      : 'bg-paper text-espresso/70 hover:text-espresso hover:bg-sand-100 border border-sand-300'
                   }`}
                 >
-                  {t.name}
+                  <span
+                    className="w-2 h-2 rounded-full border border-sand-300/80"
+                    style={{ backgroundColor: t.palette?.[0] || '#26060A' }}
+                  />
+                  <span>{t.name}</span>
                 </button>
               ))}
             </div>
@@ -238,16 +246,16 @@ function CreatePageInner() {
 
         {/* Status Toast */}
         {toastMessage && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs flex items-center gap-2 shadow-xs animate-in fade-in">
+          <div className="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs flex items-center gap-2.5 shadow-xs animate-in fade-in">
             <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>{toastMessage}</span>
+            <span className="font-medium">{toastMessage}</span>
           </div>
         )}
 
         {errorMessage && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-burgundy/10 border border-burgundy/30 text-burgundy text-xs flex items-center gap-2 shadow-xs animate-in fade-in">
+          <div className="mt-4 p-4 rounded-2xl bg-burgundy/10 border border-burgundy/30 text-burgundy text-xs flex items-center gap-2.5 shadow-xs animate-in fade-in">
             <AlertCircle className="w-4 h-4 text-burgundy flex-shrink-0" />
-            <span>{errorMessage}</span>
+            <span className="font-medium">{errorMessage}</span>
           </div>
         )}
       </div>
