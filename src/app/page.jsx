@@ -1,34 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
   ArrowRight,
-  Heart,
   Calendar,
   MapPin,
   Share2,
-  CheckCircle,
-  Play,
   Layers,
-  ShieldCheck,
   Smartphone,
   Music,
-  Send,
-  ExternalLink
+  Send
 } from 'lucide-react';
-import { getAllTemplates, getCategories } from '@/templates/registry';
 
 export default function HomePage() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const allTemplates = getAllTemplates();
-  const categories = getCategories();
-
-  const filteredTemplates = selectedCategory === 'all'
-    ? allTemplates
-    : allTemplates.filter((t) => t.category === selectedCategory);
-
   return (
     <div className="overflow-x-hidden">
       {/* ========================================================================= */}
@@ -113,113 +99,9 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. TEMPLATE CATALOG SHOWCASE - Balanced 3-Column Editorial Grid          */}
+      {/* 2. HOW IT WORKS - Refined 3-Step Editorial Workflow                       */}
       {/* ========================================================================= */}
       <section className="py-20 sm:py-28 px-4 sm:px-6 bg-sand-100/60 border-y border-sand-300">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="font-sans text-xs tracking-[0.25em] uppercase text-olive font-semibold block mb-2">
-              The Design Collection
-            </span>
-            <h2 className="font-serif text-3xl sm:text-5xl font-normal text-espresso mb-4">
-              Curated for Every Milestone &amp; Occasion
-            </h2>
-            <p className="font-sans text-sm sm:text-base text-espresso/70 max-w-xl mx-auto leading-relaxed">
-              Every occasion holds its own distinct soul. Choose a handcrafted invitation suite tailored to the spirit of your celebration.
-            </p>
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-14">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-5 py-2 rounded-full font-sans text-xs tracking-wider uppercase transition-all ${
-                  selectedCategory === cat.id
-                    ? 'bg-espresso text-paper font-semibold shadow-xs'
-                    : 'bg-paper text-espresso/70 hover:text-espresso hover:bg-sand-100 border border-sand-300'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Balanced 3-Column Template Grid (6 templates = 2 neat rows of 3) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredTemplates.map((template) => (
-              <div
-                key={template.id}
-                className="group rounded-3xl bg-paper border border-sand-300/80 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-full"
-              >
-                <div>
-                  {/* Card Thumbnail / Preview Frame (Generous height, beautiful crop) */}
-                  <div className="relative h-72 sm:h-80 overflow-hidden bg-sand-200/50">
-                    <img
-                      src={template.thumbnail}
-                      alt={template.name}
-                      className="w-full h-full object-cover object-top group-hover:scale-102 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-espresso/50 via-transparent to-transparent opacity-40 group-hover:opacity-20 transition-opacity" />
-
-                    {/* Category Badge */}
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3.5 py-1 rounded-full bg-paper/95 backdrop-blur-md border border-sand-300 text-[11px] font-sans uppercase tracking-wider text-espresso font-semibold shadow-xs">
-                        {template.categoryLabel}
-                      </span>
-                    </div>
-
-                    {/* Color Swatch Dots */}
-                    <div className="absolute bottom-4 left-4 flex items-center gap-1.5 p-1.5 rounded-full bg-paper/90 backdrop-blur-md border border-sand-300 shadow-xs">
-                      {template.palette.map((hex, i) => (
-                        <div
-                          key={i}
-                          className="w-3.5 h-3.5 rounded-full border border-sand-300/80 shadow-2xs"
-                          style={{ backgroundColor: hex }}
-                          title={`Palette color ${hex}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Card Content with elevated editorial typography */}
-                  <div className="p-6">
-                    <h3 className="font-serif text-xl font-bold text-espresso mb-2 group-hover:text-burgundy transition-colors">
-                      {template.name}
-                    </h3>
-                    <p className="font-sans text-xs sm:text-sm text-espresso/70 line-clamp-3 leading-relaxed">
-                      {template.description}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Actions with consistent heights */}
-                <div className="p-6 pt-0 space-y-2.5">
-                  <Link
-                    href={`/create?template=${template.id}`}
-                    className="w-full py-2.5 rounded-xl bg-espresso hover:bg-espresso-dark text-paper font-sans text-xs font-semibold uppercase tracking-wider text-center block shadow-xs transition-all active:scale-98"
-                  >
-                    Customize This Design
-                  </Link>
-
-                  <Link
-                    href={`/create?template=${template.id}#sample`}
-                    className="w-full py-2 rounded-xl bg-sand-100 hover:bg-sand-200 border border-sand-300 text-espresso font-sans text-xs font-medium uppercase tracking-wider text-center block transition-all"
-                  >
-                    View Sample Preview
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 3. HOW IT WORKS - Refined 3-Step Editorial Workflow                       */}
-      {/* ========================================================================= */}
-      <section className="py-20 sm:py-28 px-4 sm:px-6 bg-ivory">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <span className="font-sans text-xs tracking-[0.25em] uppercase text-olive font-semibold block mb-2">
@@ -271,7 +153,7 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. THE GUEST EXPERIENCE SHOWCASE                                          */}
+      {/* 3. THE GUEST EXPERIENCE SHOWCASE                                          */}
       {/* ========================================================================= */}
       <section className="py-20 sm:py-28 px-4 sm:px-6 bg-sand-100/70 border-t border-sand-300">
         <div className="max-w-5xl mx-auto">
@@ -385,7 +267,7 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. CALL TO ACTION BANNER                                                  */}
+      {/* 4. CALL TO ACTION BANNER                                                  */}
       {/* ========================================================================= */}
       <section className="py-20 px-4 sm:px-6 bg-ivory border-t border-sand-300 text-center">
         <div className="max-w-3xl mx-auto">
