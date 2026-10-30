@@ -108,6 +108,16 @@ function CreatePageInner() {
     setErrorMessage('');
     try {
       const id = editIdParam || generateUniqueId();
+      // Ensure all uploaded photos are compiled into the core data payload
+      const compiledData = { ...formData };
+      if (mediaUploads) {
+        Object.entries(mediaUploads).forEach(([slot, item]) => {
+          if (item?.dataUrl) {
+            compiledData[slot] = item.dataUrl;
+          }
+        });
+      }
+
       const record = {
         id,
         template_id: selectedTemplateId,
@@ -115,7 +125,7 @@ function CreatePageInner() {
         event_type: template.category,
         status: 'draft',
         user_id: actingUser?.id || null,
-        data: formData,
+        data: compiledData,
         media: mediaUploads,
       };
 
@@ -146,6 +156,16 @@ function CreatePageInner() {
     setIsPublishing(true);
     try {
       const id = editIdParam || generateUniqueId();
+      // Ensure all uploaded photos are compiled into the core data payload
+      const compiledData = { ...formData };
+      if (mediaUploads) {
+        Object.entries(mediaUploads).forEach(([slot, item]) => {
+          if (item?.dataUrl) {
+            compiledData[slot] = item.dataUrl;
+          }
+        });
+      }
+
       const record = {
         id,
         template_id: selectedTemplateId,
@@ -154,7 +174,7 @@ function CreatePageInner() {
         status: 'published',
         published_at: new Date().toISOString(),
         user_id: actingUser?.id || null,
-        data: formData,
+        data: compiledData,
         media: mediaUploads,
       };
 

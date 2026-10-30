@@ -17,8 +17,11 @@ import {
   HelpCircle,
   AlertCircle,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
+import { optimizeImageFile } from '@/lib/imageOptimizer';
 
 export default function CustomizationForm({
   template,
@@ -33,6 +36,8 @@ export default function CustomizationForm({
 }) {
   const [activeTab, setActiveTab] = useState('names');
   const [uploadError, setUploadError] = useState('');
+  const [processingSlot, setProcessingSlot] = useState(null);
+  const [dragActiveSlot, setDragActiveSlot] = useState(null);
 
   // Handle generic text change
   const handleChange = (field, value) => {
@@ -68,40 +73,80 @@ export default function CustomizationForm({
     });
   };
 
-  // File upload handler
-  const handleFileUpload = (slotKey, e) => {
-    const file = e.target.files?.[0];
+  // Core file processor with client-side canvas optimization
+  const processImageFile = async (slotKey, file) => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setUploadError('Please upload a valid image file (PNG, JPG, or WebP).');
+      setUploadError('Please select a valid image file (PNG, JPG, or WebP).');
       return;
     }
 
-    if (file.size > 8 * 1024 * 1024) {
-      setUploadError('Image size exceeds 8MB. Please choose a smaller photo.');
+    if (file.size > 15 * 1024 * 1024) {
+      setUploadError('Image size exceeds 15MB. Please choose a smaller photo.');
       return;
     }
 
     setUploadError('');
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result;
+    setProcessingSlot(slotKey);
+
+    try {
+      const optimized = await optimizeImageFile(file, 1600, 0.88);
+      
       setMediaUploads((prev) => ({
         ...prev,
         [slotKey]: {
-          name: file.name,
-          dataUrl: dataUrl,
-          size: file.size,
-          lastModified: file.lastModified,
+          name: optimized.name,
+          dataUrl: optimized.dataUrl,
+          size: optimized.size,
+          lastModified: file.lastModified || Date.now(),
         },
       }));
+
+      // Immediately propagate to formData so all templates and views display it
       setFormData((prev) => ({
         ...prev,
-        [slotKey]: dataUrl,
+        [slotKey]: optimized.dataUrl,
       }));
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setUploadError(err.message || 'Failed to process and optimize image.');
+    } finally {
+      setProcessingSlot(null);
+      setDragActiveSlot(null);
+    }
+  };
+
+  const handleFileUpload = (slotKey, e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processImageFile(slotKey, file);
+    }
+  };
+
+  const handleDragOver = (slotKey, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragActiveSlot !== slotKey) {
+      setDragActiveSlot(slotKey);
+    }
+  };
+
+  const handleDragLeave = (slotKey, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragActiveSlot === slotKey) {
+      setDragActiveSlot(null);
+    }
+  };
+
+  const handleDrop = (slotKey, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActiveSlot(null);
+    const file = e.dataTransfer?.files?.[0];
+    if (file) {
+      processImageFile(slotKey, file);
+    }
   };
 
   const clearSlot = (slotKey) => {
@@ -553,12 +598,21 @@ export default function CustomizationForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {Object.entries(slots).map(([slotKey, slotConfig]) => {
-              const currentMedia = mediaUploads[slotKey] || (formData[slotKey] ? { dataUrl: formData[slotKey], name: 'Saved Photo' } : null);
+              const currentMedia = mediaUploads[slotKey] || (formData[slotKey] ? { dataUrl: formData[slotKey], name: 'Custom Portrait' } : null);
+              const isProcessing = processingSlot === slotKey;
+              const isDragOver = dragActiveSlot === slotKey;
 
               return (
                 <div
                   key={slotKey}
-                  className="p-5 rounded-3xl bg-sand-50/80 border border-sand-300/80 flex flex-col justify-between"
+                  onDragOver={(e) => handleDragOver(slotKey, e)}
+                  onDragLeave={(e) => handleDragLeave(slotKey, e)}
+                  onDrop={(e) => handleDrop(slotKey, e)}
+                  className={`p-5 rounded-3xl bg-sand-50/80 border transition-all duration-300 flex flex-col justify-between ${
+                    isDragOver
+                      ? 'border-olive bg-sand-100 shadow-md ring-2 ring-olive/20'
+                      : 'border-sand-300/80'
+                  }`}
                 >
                   <div className="mb-3">
                     <span className="font-serif text-sm font-bold text-espresso block">
@@ -569,36 +623,61 @@ export default function CustomizationForm({
                     </span>
                   </div>
 
-                  {currentMedia ? (
-                    <div className="relative rounded-2xl overflow-hidden border border-sand-300 bg-sand-100 h-40 flex items-center justify-center group shadow-2xs">
+                  {isProcessing ? (
+                    <div className="h-44 rounded-2xl border border-sand-300 bg-sand-100 flex flex-col items-center justify-center gap-2 text-center p-4">
+                      <Loader2 className="w-6 h-6 text-olive animate-spin" />
+                      <span className="font-sans text-xs text-espresso font-semibold">
+                        Optimizing portrait...
+                      </span>
+                      <span className="font-sans text-[10px] text-espresso/60">
+                        Scaling for fast mobile display
+                      </span>
+                    </div>
+                  ) : currentMedia ? (
+                    <div className="relative rounded-2xl overflow-hidden border border-sand-300 bg-sand-100 h-44 flex items-center justify-center group shadow-2xs">
                       <img
                         src={currentMedia.dataUrl}
                         alt={slotConfig.label}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-espresso/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-espresso/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-3">
+                        <label className="px-3.5 py-1.5 rounded-full bg-paper hover:bg-sand-100 text-espresso text-[11px] font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-xs flex items-center gap-1.5">
+                          <RefreshCw className="w-3 h-3 text-olive" />
+                          <span>Replace</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(slotKey, e)}
+                            className="hidden"
+                          />
+                        </label>
                         <button
                           type="button"
                           onClick={() => clearSlot(slotKey)}
-                          className="px-4 py-1.5 rounded-full bg-burgundy hover:bg-burgundy-light text-white text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                          className="px-3.5 py-1.5 rounded-full bg-burgundy hover:bg-burgundy-light text-white text-[11px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
                         >
                           Remove Photo
                         </button>
                       </div>
-                      <div className="absolute bottom-2 right-2 bg-paper/95 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[10px] text-espresso font-semibold border border-sand-300 shadow-xs">
-                        Uploaded
+                      <div className="absolute bottom-2 right-2 bg-paper/95 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[10px] text-espresso font-semibold border border-sand-300 shadow-xs flex items-center gap-1">
+                        <Check className="w-3 h-3 text-olive" />
+                        <span>Ready</span>
                       </div>
                     </div>
                   ) : (
-                    <label className="h-40 rounded-2xl border-2 border-dashed border-sand-300 hover:border-olive bg-paper hover:bg-sand-100/70 transition-all flex flex-col items-center justify-center cursor-pointer p-4 text-center group">
+                    <label className={`h-44 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer p-4 text-center group ${
+                      isDragOver
+                        ? 'border-olive bg-sand-200/80 scale-102'
+                        : 'border-sand-300 hover:border-olive bg-paper hover:bg-sand-100/70'
+                    }`}>
                       <div className="w-10 h-10 rounded-full bg-sand-100 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
                         <Upload className="w-5 h-5 text-olive" />
                       </div>
                       <span className="font-sans text-xs font-semibold text-espresso">
-                        Upload Image
+                        {isDragOver ? 'Drop Image Here' : 'Upload or Drag & Drop'}
                       </span>
                       <span className="text-[10px] text-espresso/60 mt-0.5">
-                        PNG, JPG or WebP (up to 8MB)
+                        PNG, JPG, WebP up to 15MB
                       </span>
                       <input
                         type="file"
