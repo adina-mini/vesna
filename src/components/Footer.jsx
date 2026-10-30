@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sparkles, Heart, Compass, ShieldCheck } from 'lucide-react';
+import VesnaLogo from '@/components/VesnaLogo';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -17,18 +18,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-sand-300/70">
         {/* Brand & Manifesto */}
         <div className="md:col-span-5 space-y-4 text-center md:text-left">
-          <div className="flex items-center justify-center md:justify-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sand-100 to-sand-200 border border-sand-300 flex items-center justify-center shadow-2xs">
-              <Sparkles className="w-4 h-4 text-olive" />
-            </div>
-            <div>
-              <span className="font-serif font-bold text-lg text-espresso tracking-[0.18em] block leading-tight">
-                DAWATNAMA
-              </span>
-              <span className="text-[9px] font-sans uppercase tracking-[0.22em] text-olive font-semibold block">
-                Luxury Digital Atelier
-              </span>
-            </div>
+          <div className="flex items-center justify-center md:justify-start">
+            <VesnaLogo size="md" />
           </div>
 
           <p className="font-sans text-xs sm:text-sm text-espresso/70 max-w-sm leading-relaxed">
@@ -100,9 +91,13 @@ export default function Footer() {
         <p>
           Designed for unforgettable life celebrations across Karachi, Lahore, Islamabad, London, Dubai &amp; worldwide.
         </p>
-        <p className="uppercase tracking-widest text-[10px]">
-          © {new Date().getFullYear()} Dawatnama Studio. All rights reserved.
-        </p>
+        <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-espresso/60">
+          <span>© {new Date().getFullYear()} VESNA Atelier. All rights reserved.</span>
+          <span>•</span>
+          <Link href="/admin" className="hover:text-espresso text-olive/80 transition-colors">
+            Admin Console
+          </Link>
+        </div>
       </div>
     </footer>
   );

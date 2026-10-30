@@ -8,7 +8,7 @@ const AuthContext = createContext({
   session: null,
   loading: true,
   isAuthModalOpen: false,
-  authModalConfig: { title: 'Sign In to Dawatnama', description: '', callback: null },
+  authModalConfig: { title: 'Sign In to VESNA', description: '', callback: null },
   openAuthModal: () => {},
   closeAuthModal: () => {},
   signInWithGoogle: async () => {},
@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
   // Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalConfig, setAuthModalConfig] = useState({
-    title: 'Sign In to Dawatnama',
+    title: 'Sign In to VESNA',
     description: 'Save your digital invitations and track guest RSVPs from your private dashboard.',
     callback: null,
   });
@@ -65,9 +65,9 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const openAuthModal = ({ title = 'Sign In to Dawatnama', description = '', callback = null } = {}) => {
+  const openAuthModal = ({ title = 'Sign In to VESNA', description = '', callback = null } = {}) => {
     setAuthModalConfig({
-      title: title || 'Sign In to Dawatnama',
+      title: title || 'Sign In to VESNA',
       description: description || 'Save your digital invitations and track guest RSVPs from your private dashboard.',
       callback,
     });
@@ -103,7 +103,7 @@ export function AuthProvider({ children }) {
       // Local demo fallback
       const demoUser = {
         id: 'usr_google_demo_101',
-        email: 'host@dawatnama.studio',
+        email: 'host@vesna.atelier',
         user_metadata: {
           full_name: 'Fatima & Sharjeel (Host)',
           avatar_url: '/assets/couple-golden-intro.jpg',
@@ -178,7 +178,7 @@ export function AuthProvider({ children }) {
   };
 
   // Quick Instant Host Demo Login
-  const signInDemo = (name = 'Wedding Host', email = 'host@dawatnama.com') => {
+  const signInDemo = (name = 'Wedding Host', email = 'host@vesna.atelier') => {
     const demoUser = {
       id: 'usr_demo_host_888',
       email,

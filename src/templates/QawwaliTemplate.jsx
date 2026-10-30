@@ -469,7 +469,7 @@ export default function QawwaliTemplate({ data, isSample = false, invitationId, 
 
           {/* Footer Card Credit */}
           <div className="text-center pb-8 pt-2 text-[#A4B3C6]/60 text-[10px] font-sans tracking-widest uppercase border-t border-[#D4AF37]/15 mx-6">
-            Dawatnama Luxury Digital Invitations • Shadii &copy; 2026
+            VESNA Luxury Digital Atelier • &copy; {new Date().getFullYear()}
           </div>
 
         </div>

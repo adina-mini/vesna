@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -16,12 +16,23 @@ import {
   Compass
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import VesnaLogo from '@/components/VesnaLogo';
+import { getPlatformSettings } from '@/lib/supabase';
 
 export default function Navbar() {
   const pathname = usePathname();
   const { user, openAuthModal, signOut } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [banner, setBanner] = useState(null);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    const s = getPlatformSettings();
+    if (s && s.bannerActive && s.bannerMessage) {
+      setBanner(s);
+    }
+  }, [pathname]);
 
   const isInvitePage = pathname?.startsWith('/invite/');
 
@@ -40,22 +51,37 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-paper/85 backdrop-blur-xl border-b border-sand-300/80 shadow-[0_4px_20px_-2px_rgba(69,53,47,0.04)] transition-all">
+    <div className="sticky top-0 z-50">
+      {/* Top Announcement Banner (Configured from /admin) */}
+      {banner?.bannerActive && !bannerDismissed && (
+        <div className="bg-[#1C1815] text-paper text-[11px] font-sans py-2 px-4 flex items-center justify-center gap-2 border-b border-gold-500/30 text-center relative shadow-sm">
+          <Sparkles className="w-3.5 h-3.5 text-gold-400 flex-shrink-0 animate-pulse" />
+          <span className="tracking-wide text-sand-100">
+            {banner.bannerMessage}
+          </span>
+          {banner.bannerLink && (
+            <Link
+              href={banner.bannerLink}
+              className="underline text-gold-400 hover:text-gold-300 font-semibold ml-1.5 transition-colors"
+            >
+              Explore Now
+            </Link>
+          )}
+          <button
+            onClick={() => setBannerDismissed(true)}
+            className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 text-sand-300/60 hover:text-sand-100 p-1 cursor-pointer transition-colors"
+            title="Dismiss announcement"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      <header className="bg-paper/90 backdrop-blur-xl border-b border-sand-300/80 shadow-[0_4px_20px_-2px_rgba(69,53,47,0.04)] transition-all">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
         {/* Brand Logo & Monogram */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-sand-100 to-sand-200 border border-sand-300 flex items-center justify-center shadow-xs group-hover:border-olive group-hover:shadow-md transition-all duration-300 group-hover:scale-102">
-            <Sparkles className="w-4 h-4 text-olive group-hover:text-gold-600 transition-colors" />
-            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-gold-500/80 ring-2 ring-paper" />
-          </div>
-          <div>
-            <span className="font-serif font-bold text-lg text-espresso tracking-[0.18em] block leading-tight">
-              DAWATNAMA
-            </span>
-            <span className="text-[10px] font-sans uppercase tracking-[0.22em] text-olive font-semibold block">
-              Luxury Invitation Atelier
-            </span>
-          </div>
+        <Link href="/" className="group flex items-center">
+          <VesnaLogo size="md" />
         </Link>
 
         {/* Desktop Navigation Links */}
@@ -167,7 +193,7 @@ export default function Navbar() {
             /* User Signed Out: Sign In Trigger */
             <button
               id="nav-signin-btn"
-              onClick={() => openAuthModal({ title: 'Sign In to Dawatnama' })}
+              onClick={() => openAuthModal({ title: 'Sign In to VESNA' })}
               className="px-4 py-2 rounded-full border border-sand-300 bg-paper hover:bg-sand-100 text-espresso font-sans text-xs font-medium transition-all hover:shadow-xs cursor-pointer"
             >
               Sign In
@@ -233,7 +259,7 @@ export default function Navbar() {
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  openAuthModal({ title: 'Sign In to Dawatnama' });
+                  openAuthModal({ title: 'Sign In to VESNA' });
                 }}
                 className="w-full py-2.5 rounded-2xl border border-sand-300 bg-sand-50 hover:bg-sand-100 text-espresso font-sans text-xs font-semibold uppercase tracking-wider text-center block"
               >
@@ -244,5 +270,6 @@ export default function Navbar() {
         </div>
       )}
     </header>
+  </div>
   );
 }

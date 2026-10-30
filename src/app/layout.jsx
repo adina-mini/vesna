@@ -4,9 +4,9 @@ import Footer from '@/components/Footer';
 import ClientProviders from '@/components/ClientProviders';
 
 export const metadata = {
-  title: 'Dawatnama | Modern Editorial Digital Invitation Studio',
-  description: 'Design exquisite animated digital invitations for weddings, birthdays, anniversaries, and life’s most cherished celebrations.',
-  keywords: 'digital invitation studio, wedding invites, birthday invitations, anniversary celebration, online RSVP, animated invite card',
+  title: 'VESNA | The Digital Invitation Atelier',
+  description: 'Design exquisite animated digital invitations for weddings, Barat, Walima, Mehndi, and life’s most cherished celebrations.',
+  keywords: 'VESNA, digital invitation atelier, Pakistani wedding invites, Barat, Walima, Mehndi, online RSVP, animated luxury invitation card',
 };
 
 export default function RootLayout({ children }) {
