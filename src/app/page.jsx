@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import HeroMockup from '@/components/HeroMockup';
 import {
   Sparkles,
   ArrowRight,
@@ -24,7 +25,7 @@ export default function HomePage() {
         {/* Subtle warm ambient glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-sand-200/40 blur-[130px] rounded-full pointer-events-none" />
 
-        <div className="max-w-4xl mx-auto relative z-10">
+        <div className="max-w-5xl mx-auto relative z-10">
           {/* Eyebrow Studio Pill */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-paper border border-sand-300 text-olive text-xs font-sans uppercase tracking-[0.2em] font-medium mb-8 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-olive" />
@@ -60,6 +61,9 @@ export default function HomePage() {
               <span>Browse All Designs</span>
             </Link>
           </div>
+
+          {/* Luxury Interactive Phone Mockup Preview */}
+          <HeroMockup />
 
           {/* Value Badges in subtle Paper White cards */}
           <div className="mt-16 pt-8 border-t border-sand-300/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
