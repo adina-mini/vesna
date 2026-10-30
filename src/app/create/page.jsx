@@ -14,6 +14,7 @@ import { getAllTemplates, getTemplateById } from '@/templates/registry';
 import CustomizationForm from '@/components/CustomizationForm';
 import SampleCardShowcase from '@/components/SampleCardShowcase';
 import PublishModal from '@/components/PublishModal';
+import PaymentModal from '@/components/PaymentModal';
 import { saveInvitation, getInvitationById } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
@@ -50,8 +51,9 @@ function CreatePageInner() {
   const [toastMessage, setToastMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Publish modal state
+  // Publish & Payment modal state
   const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [publishedInviteId, setPublishedInviteId] = useState('');
 
   // If editing existing invitation, load its draft data
@@ -171,8 +173,8 @@ function CreatePageInner() {
         template_id: selectedTemplateId,
         title: `${formData.bride_name} & ${formData.groom_name || 'Union'}'s Digital Invitation`,
         event_type: template.category,
-        status: 'published',
-        published_at: new Date().toISOString(),
+        status: 'pending_payment',
+        published_at: null,
         user_id: actingUser?.id || null,
         data: compiledData,
         media: mediaUploads,
@@ -180,7 +182,7 @@ function CreatePageInner() {
 
       await saveInvitation(record);
       setPublishedInviteId(id);
-      setPublishModalOpen(true);
+      setPaymentModalOpen(true);
     } catch (err) {
       setErrorMessage('Failed to publish invitation. Please check your connection and try again.');
     } finally {
@@ -329,6 +331,22 @@ function CreatePageInner() {
         onClose={() => setPublishModalOpen(false)}
         invitationId={publishedInviteId}
         invitationTitle={formData.bride_name}
+      />
+
+      {/* PAYMENT & PROOF SUBMISSION MODAL (Mode A: Strict Activation) */}
+      <PaymentModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        invitationId={publishedInviteId}
+        coupleTitle={
+          formData.bride_name && formData.groom_name
+            ? `${formData.bride_name} & ${formData.groom_name}`
+            : formData.bride_name || 'Your Celebration'
+        }
+        suiteName={template?.name || 'Atelier Suite'}
+        onPaymentSuccess={(order) => {
+          showToast('Payment proof submitted! Concierge will activate your invitation shortly.');
+        }}
       />
     </div>
   );

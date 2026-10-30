@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getInvitationById } from '@/lib/supabase';
 import { getTemplateById } from '@/templates/registry';
 import PublicInviteWrapper from '@/components/PublicInviteWrapper';
-import { Lock, AlertCircle, ArrowLeft, Sparkles } from 'lucide-react';
+import { Lock, AlertCircle, ArrowLeft, Sparkles, Clock } from 'lucide-react';
 
 /**
  * Dynamic OpenGraph / Social Media Metadata for WhatsApp previews
@@ -69,7 +69,43 @@ export default async function PublicInvitePage({ params }) {
     );
   }
 
-  // 2. Invitation is in Unpublished Draft Status
+  // 2. Invitation is Awaiting Payment Verification (Mode A)
+  if (invitation.status === 'pending_payment') {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center p-6 text-center text-espresso">
+        <div className="max-w-md p-8 rounded-3xl bg-paper border border-sand-300 shadow-xl space-y-4">
+          <div className="w-16 h-16 rounded-full bg-olive/10 border border-olive/30 text-olive flex items-center justify-center mx-auto shadow-xs">
+            <Clock className="w-8 h-8 text-olive animate-pulse" />
+          </div>
+          <span className="font-sans text-[11px] tracking-widest uppercase text-olive font-semibold block">
+            Atelier Verification • Mode A
+          </span>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-espresso">
+            Payment Verification in Progress
+          </h1>
+          <p className="font-sans text-xs sm:text-sm text-espresso/70 leading-relaxed">
+            The celebration suite for <strong className="text-espresso">{invitation.title}</strong> has been submitted. Our concierge is confirming the transfer. This invitation will unlock for guests immediately upon approval.
+          </p>
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href={`/create?edit=${invitation.id}`}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-espresso hover:bg-espresso-dark text-paper font-sans text-xs font-semibold uppercase tracking-wider shadow-xs"
+            >
+              View Order Details
+            </Link>
+            <Link
+              href="/"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-sand-100 hover:bg-sand-200 border border-sand-300 text-espresso font-sans text-xs font-medium uppercase tracking-wider"
+            >
+              Studio Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Invitation is in Unpublished Draft Status
   if (invitation.status !== 'published') {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center p-6 text-center text-espresso">

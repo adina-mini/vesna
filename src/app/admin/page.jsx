@@ -11,10 +11,15 @@ import {
   listAllRsvpsForAdmin,
   getPlatformSettings,
   savePlatformSettings,
+  listAllOrdersForAdmin,
+  verifyAndActivateOrder,
+  rejectOrder,
 } from '@/lib/supabase';
 import {
   Shield,
   ShieldCheck,
+  CreditCard,
+  Clock,
   Lock,
   KeyRound,
   Sparkles,
@@ -54,17 +59,18 @@ export default function AdminPage() {
   const [authError, setAuthError] = useState('');
 
   // Active Tab
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'invitations' | 'suites' | 'settings'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'orders' | 'suites' | 'settings'
 
   // Data State
   const [invitations, setInvitations] = useState([]);
   const [rsvps, setRsvps] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionSuccess, setActionSuccess] = useState('');
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'published' | 'draft'
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'published' | 'draft' | 'pending_payment'
 
   // Suite Catalog Customization State (Stored locally)
   const [suiteOverrides, setSuiteOverrides] = useState({});
@@ -76,6 +82,23 @@ export default function AdminPage() {
     bannerActive: true,
     bannerMessage: 'Winter Wedding Season: Enjoy Complimentary 3D Gold Foil Shimmer on All 15 Suites',
     bannerLink: '/templates',
+    suitePricePkr: '2500',
+    currency: 'PKR',
+    paymentMode: 'strict',
+    easypaisa: {
+      accountTitle: 'VESNA Atelier',
+      accountNumber: '0300 8472911',
+    },
+    jazzcash: {
+      accountTitle: 'VESNA Atelier',
+      accountNumber: '0300 8472911',
+    },
+    bankTransfer: {
+      bankName: 'Meezan Bank',
+      accountTitle: 'VESNA Luxury Studio',
+      iban: 'PK82MEZN0001234567890123',
+      accountNumber: '01020304050607',
+    },
   });
   const [settingsSaved, setSettingsSaved] = useState(false);
 
@@ -96,12 +119,14 @@ export default function AdminPage() {
   const loadPlatformData = async () => {
     setLoading(true);
     try {
-      const [invs, rsvpList] = await Promise.all([
+      const [invs, rsvpList, orderList] = await Promise.all([
         listAllInvitationsForAdmin(),
         listAllRsvpsForAdmin(),
+        listAllOrdersForAdmin(),
       ]);
       setInvitations(invs || []);
       setRsvps(rsvpList || []);
+      setOrders(orderList || []);
 
       const savedSettings = getPlatformSettings();
       setSettings(savedSettings);
@@ -117,6 +142,18 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerifyOrder = async (order) => {
+    await verifyAndActivateOrder(order.id, order.invitation_id);
+    showNotice(`✅ Order verified! ${order.couple_name}'s invitation is now LIVE.`);
+    await loadPlatformData();
+  };
+
+  const handleRejectOrder = async (order) => {
+    await rejectOrder(order.id, order.invitation_id);
+    showNotice(`Order for ${order.couple_name} rejected.`);
+    await loadPlatformData();
   };
 
   useEffect(() => {
@@ -240,23 +277,31 @@ export default function AdminPage() {
   const metrics = useMemo(() => {
     const total = invitations.length;
     const published = invitations.filter((i) => i.status === 'published').length;
-    const drafts = total - published;
+    const pendingPayment = invitations.filter((i) => i.status === 'pending_payment').length;
+    const drafts = total - published - pendingPayment;
     const totalRsvps = rsvps.length;
     const totalGuestsAttending = rsvps
       .filter((r) => r.attendance === 'attending')
       .reduce((sum, r) => sum + (parseInt(r.guest_count, 10) || 1), 0);
     const suitesCount = TEMPLATES.length;
+    const pendingOrders = orders.filter((o) => o.status === 'pending').length;
+    const verifiedOrders = orders.filter((o) => o.status === 'verified').length;
+    const totalRevenue = verifiedOrders * (parseInt(settings?.suitePricePkr || '2500', 10) || 2500);
 
     return {
       total,
       published,
+      pendingPayment,
       drafts,
       totalRsvps,
       totalGuestsAttending,
       suitesCount,
+      pendingOrders,
+      verifiedOrders,
+      totalRevenue,
       conversionRate: total > 0 ? Math.round((published / total) * 100) : 0,
     };
-  }, [invitations, rsvps]);
+  }, [invitations, rsvps, orders, settings]);
 
   // Export CSV Data
   const exportCsv = () => {
@@ -534,6 +579,23 @@ export default function AdminPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab('orders')}
+            className={`px-5 py-2.5 rounded-xl text-xs font-sans font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'orders'
+                ? 'bg-espresso text-paper shadow-xs'
+                : 'text-espresso/70 hover:text-espresso hover:bg-paper/60'
+            }`}
+          >
+            <CreditCard className="w-4 h-4 text-gold-400" />
+            <span>Orders &amp; Payments ({orders.length})</span>
+            {metrics.pendingOrders > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-gold-500 text-espresso text-[10px] font-bold animate-pulse">
+                {metrics.pendingOrders} Pending
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setActiveTab('suites')}
             className={`px-5 py-2.5 rounded-xl text-xs font-sans font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'suites'
@@ -725,7 +787,153 @@ export default function AdminPage() {
         )}
 
         {/* =================================================================== */}
-        {/* TAB 2: SUITE CATALOG CONTROLS                                       */}
+        {/* TAB 2: ORDERS & PAYMENTS (Mode A Activation)                        */}
+        {/* =================================================================== */}
+        {activeTab === 'orders' && (
+          <div className="space-y-6">
+            <div className="p-4 rounded-2xl bg-sand-100/90 border border-sand-300 text-xs text-espresso/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span>
+                <strong>Mode A Concierge Queue:</strong> Review client Easypaisa, JazzCash, or bank transfers. Clicking <strong>Verify &amp; Activate</strong> immediately switches the client invitation to <strong>LIVE</strong>.
+              </span>
+              <span className="font-bold text-olive whitespace-nowrap">
+                Est. Total Revenue: PKR {metrics.totalRevenue?.toLocaleString()}
+              </span>
+            </div>
+
+            <div className="rounded-3xl bg-paper border border-sand-300/80 shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-sand-100/80 border-b border-sand-300/80 text-[11px] font-sans uppercase tracking-widest text-espresso/70">
+                      <th className="py-4 px-6 font-bold">Couple &amp; Order ID</th>
+                      <th className="py-4 px-6 font-bold">Suite &amp; Amount</th>
+                      <th className="py-4 px-6 font-bold">Method &amp; Trx ID</th>
+                      <th className="py-4 px-6 font-bold">Sender Details</th>
+                      <th className="py-4 px-6 font-bold">Status</th>
+                      <th className="py-4 px-6 font-bold text-right">Verification Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-sand-200/70 text-xs font-sans">
+                    {orders.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="py-12 text-center text-espresso/60">
+                          No orders in the payment queue.
+                        </td>
+                      </tr>
+                    ) : (
+                      orders.map((order) => {
+                        const isPending = order.status === 'pending';
+                        const isVerified = order.status === 'verified';
+
+                        return (
+                          <tr key={order.id} className="hover:bg-sand-50/80 transition-colors">
+                            {/* Couple & Order ID */}
+                            <td className="py-4 px-6">
+                              <span className="font-serif font-bold text-sm text-espresso block">
+                                {order.couple_name}
+                              </span>
+                              <span className="font-mono text-[10px] text-espresso/50 block mt-0.5">
+                                Order: {order.id} • Inv: {order.invitation_id}
+                              </span>
+                            </td>
+
+                            {/* Suite & Amount */}
+                            <td className="py-4 px-6">
+                              <span className="font-semibold text-espresso block">
+                                {order.suite_name}
+                              </span>
+                              <span className="font-bold text-olive block mt-0.5">
+                                {order.amount}
+                              </span>
+                            </td>
+
+                            {/* Method & Trx ID */}
+                            <td className="py-4 px-6">
+                              <span className="uppercase text-[11px] font-bold tracking-wider text-espresso block">
+                                {order.method}
+                              </span>
+                              <span className="font-mono text-[10px] text-gold-700 bg-sand-100 px-2 py-0.5 rounded-md inline-block mt-0.5">
+                                TID: {order.trx_id || 'Sent on WhatsApp'}
+                              </span>
+                            </td>
+
+                            {/* Sender Details */}
+                            <td className="py-4 px-6 text-espresso/80">
+                              <span className="block font-medium">
+                                {order.sender_name || 'Name not provided'}
+                              </span>
+                              <span className="text-[11px] font-mono text-espresso/60 block">
+                                {order.sender_phone || 'Phone not provided'}
+                              </span>
+                            </td>
+
+                            {/* Status */}
+                            <td className="py-4 px-6">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-semibold uppercase tracking-wider ${
+                                  isVerified
+                                    ? 'bg-olive/10 text-olive border border-olive/30'
+                                    : isPending
+                                    ? 'bg-gold-500/10 text-gold-700 border border-gold-500/30 animate-pulse'
+                                    : 'bg-sand-200 text-espresso/60'
+                                }`}
+                              >
+                                <span
+                                  className={`w-2 h-2 rounded-full ${
+                                    isVerified ? 'bg-olive' : isPending ? 'bg-gold-500' : 'bg-espresso/40'
+                                  }`}
+                                />
+                                <span>{order.status}</span>
+                              </span>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="py-4 px-6 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Link
+                                  href={`/invite/${order.invitation_id}`}
+                                  target="_blank"
+                                  className="p-2 rounded-xl bg-sand-100 hover:bg-sand-200 text-espresso transition-colors"
+                                  title="Preview Public Invitation"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </Link>
+
+                                {isPending && (
+                                  <>
+                                    <button
+                                      onClick={() => handleVerifyOrder(order)}
+                                      className="px-3.5 py-1.5 rounded-xl bg-olive hover:bg-olive-dark text-paper font-sans text-[11px] font-semibold uppercase tracking-wider transition-all flex items-center gap-1 shadow-xs cursor-pointer"
+                                      title="Verify payment and publish suite"
+                                    >
+                                      <Check className="w-3.5 h-3.5 text-gold-400" />
+                                      <span>Verify &amp; Activate</span>
+                                    </button>
+
+                                    <button
+                                      onClick={() => handleRejectOrder(order)}
+                                      className="p-1.5 rounded-xl bg-sand-100 hover:bg-burgundy/10 hover:text-burgundy text-espresso/60 transition-colors cursor-pointer"
+                                      title="Reject order"
+                                    >
+                                      <XCircle className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =================================================================== */}
+        {/* TAB 3: SUITE CATALOG CONTROLS                                       */}
         {/* =================================================================== */}
         {activeTab === 'suites' && (
           <div className="space-y-6">
@@ -864,6 +1072,164 @@ export default function AdminPage() {
                   placeholder="concierge@vesna.atelier"
                   className="w-full px-4 py-2.5 rounded-xl bg-sand-50 border border-sand-300 text-xs text-espresso focus:outline-hidden focus:border-olive font-mono"
                 />
+              </div>
+
+              {/* Pricing & Activation Mode (Mode A) */}
+              <div className="p-5 rounded-2xl bg-sand-100/60 border border-sand-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-sans text-xs font-bold uppercase tracking-wider text-espresso">
+                    Suite Pricing &amp; Activation Mode
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-olive/10 border border-olive/30 text-olive text-[10px] font-sans font-bold uppercase tracking-wider">
+                    Mode A (Strict Verification)
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block font-sans text-[11px] font-medium text-espresso/80 mb-1">
+                    Suite Price (PKR)
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.suitePricePkr}
+                    onChange={(e) => setSettings({ ...settings, suitePricePkr: e.target.value })}
+                    placeholder="2500"
+                    className="w-full px-3.5 py-2 rounded-xl bg-paper border border-sand-300 text-xs text-espresso focus:outline-hidden focus:border-olive font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Direct Payment Accounts (Easypaisa / JazzCash / Bank) */}
+              <div className="p-5 rounded-2xl bg-sand-100/60 border border-sand-200 space-y-4">
+                <span className="font-sans text-xs font-bold uppercase tracking-wider text-espresso block">
+                  Direct Transfer Receiving Accounts
+                </span>
+
+                {/* Easypaisa */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block font-sans text-[10px] text-espresso/70 mb-1">
+                      Easypaisa Account Title
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.easypaisa?.accountTitle || ''}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          easypaisa: { ...settings.easypaisa, accountTitle: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-paper border border-sand-300 text-xs text-espresso"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-sans text-[10px] text-espresso/70 mb-1">
+                      Easypaisa Mobile Number
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.easypaisa?.accountNumber || ''}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          easypaisa: { ...settings.easypaisa, accountNumber: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-paper border border-sand-300 text-xs text-espresso font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* JazzCash */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-sand-200">
+                  <div>
+                    <label className="block font-sans text-[10px] text-espresso/70 mb-1">
+                      JazzCash Account Title
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.jazzcash?.accountTitle || ''}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          jazzcash: { ...settings.jazzcash, accountTitle: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-paper border border-sand-300 text-xs text-espresso"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-sans text-[10px] text-espresso/70 mb-1">
+                      JazzCash Mobile Number
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.jazzcash?.accountNumber || ''}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          jazzcash: { ...settings.jazzcash, accountNumber: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-paper border border-sand-300 text-xs text-espresso font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Bank / IBAN */}
+                <div className="pt-1 border-t border-sand-200 space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-sans text-[10px] text-espresso/70 mb-1">
+                        Bank Name
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.bankTransfer?.bankName || ''}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            bankTransfer: { ...settings.bankTransfer, bankName: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-xl bg-paper border border-sand-300 text-xs text-espresso"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-sans text-[10px] text-espresso/70 mb-1">
+                        Bank Account Title
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.bankTransfer?.accountTitle || ''}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            bankTransfer: { ...settings.bankTransfer, accountTitle: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-xl bg-paper border border-sand-300 text-xs text-espresso"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-sans text-[10px] text-espresso/70 mb-1">
+                      IBAN / Account Number
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.bankTransfer?.iban || ''}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          bankTransfer: { ...settings.bankTransfer, iban: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-paper border border-sand-300 text-xs text-espresso font-mono"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Site-wide Banner */}

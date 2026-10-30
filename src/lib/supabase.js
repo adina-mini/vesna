@@ -234,6 +234,7 @@ export async function listRsvpsForInvitation(invitationId) {
 }
 
 const SETTINGS_KEY = 'vesna_platform_settings';
+const LOCAL_ORDERS_KEY = 'vesna_platform_orders';
 
 const DEFAULT_SETTINGS = {
   conciergeWhatsApp: '+92 300 8472911',
@@ -241,6 +242,23 @@ const DEFAULT_SETTINGS = {
   bannerActive: true,
   bannerMessage: 'Winter Wedding Season: Enjoy Complimentary 3D Gold Foil Shimmer on All 15 Suites',
   bannerLink: '/templates',
+  suitePricePkr: '2500',
+  currency: 'PKR',
+  paymentMode: 'strict', // Mode A: Concierge verification required
+  easypaisa: {
+    accountTitle: 'VESNA Atelier',
+    accountNumber: '0300 8472911',
+  },
+  jazzcash: {
+    accountTitle: 'VESNA Atelier',
+    accountNumber: '0300 8472911',
+  },
+  bankTransfer: {
+    bankName: 'Meezan Bank',
+    accountTitle: 'VESNA Luxury Studio',
+    iban: 'PK82MEZN0001234567890123',
+    accountNumber: '01020304050607',
+  },
 };
 
 /**
@@ -438,4 +456,138 @@ export function savePlatformSettings(newSettings) {
     }
   }
   return DEFAULT_SETTINGS;
+}
+
+/**
+ * Submit Payment Proof for Invitation (Mode A: Strict Activation)
+ */
+export async function submitPaymentProof(orderData) {
+  const record = {
+    id: `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    invitation_id: orderData.invitationId,
+    couple_name: orderData.coupleName || 'Couple Celebration',
+    suite_name: orderData.suiteName || 'Atelier Suite',
+    amount: orderData.amount || 'PKR 2,500',
+    method: orderData.method || 'easypaisa', // 'easypaisa' | 'jazzcash' | 'bank_transfer'
+    trx_id: orderData.trxId || '',
+    sender_name: orderData.senderName || '',
+    sender_phone: orderData.senderPhone || '',
+    status: 'pending', // 'pending' | 'verified' | 'rejected'
+    notes: orderData.notes || '',
+    created_at: new Date().toISOString(),
+  };
+
+  // Update invitation status to pending_payment
+  await updateInvitationStatus(orderData.invitationId, 'pending_payment');
+
+  if (typeof window !== 'undefined') {
+    try {
+      const existing = JSON.parse(localStorage.getItem(LOCAL_ORDERS_KEY) || '[]');
+      existing.unshift(record);
+      localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(existing));
+    } catch (e) {}
+  }
+
+  return record;
+}
+
+/**
+ * Super Admin: List all payment orders
+ */
+export async function listAllOrdersForAdmin() {
+  let list = [];
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(LOCAL_ORDERS_KEY);
+      list = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      list = [];
+    }
+  }
+
+  // Seed sample initial order for testing if empty
+  if (list.length === 0) {
+    list = [
+      {
+        id: 'ord_demo_9821',
+        invitation_id: 'inv_fatima_sharjeel',
+        couple_name: 'Fatima & Sharjeel',
+        suite_name: 'Royal Burgundy Barat',
+        amount: 'PKR 2,500',
+        method: 'easypaisa',
+        trx_id: 'EP982140182',
+        sender_name: 'Sharjeel Khan',
+        sender_phone: '0300 1234567',
+        status: 'verified',
+        created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
+      },
+      {
+        id: 'ord_demo_4412',
+        invitation_id: 'inv_zara_mehndi',
+        couple_name: 'Zara & Daniyal',
+        suite_name: 'Festive Mehndi',
+        amount: 'PKR 2,500',
+        method: 'jazzcash',
+        trx_id: 'JC441209841',
+        sender_name: 'Daniyal Malik',
+        sender_phone: '0321 9876543',
+        status: 'pending',
+        created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+      },
+    ];
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(list));
+      } catch (e) {}
+    }
+  }
+
+  return list;
+}
+
+/**
+ * Super Admin: Verify and Activate Order (Mode A)
+ * Instantly publishes the invitation
+ */
+export async function verifyAndActivateOrder(orderId, invitationId) {
+  // 1. Activate invitation
+  await updateInvitationStatus(invitationId, 'published');
+
+  // 2. Mark order as verified
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(LOCAL_ORDERS_KEY);
+      if (raw) {
+        const orders = JSON.parse(raw);
+        const updated = orders.map((o) =>
+          o.id === orderId ? { ...o, status: 'verified', verified_at: new Date().toISOString() } : o
+        );
+        localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(updated));
+      }
+    } catch (e) {}
+  }
+
+  return true;
+}
+
+/**
+ * Super Admin: Reject Order
+ */
+export async function rejectOrder(orderId, invitationId) {
+  await updateInvitationStatus(invitationId, 'draft');
+
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(LOCAL_ORDERS_KEY);
+      if (raw) {
+        const orders = JSON.parse(raw);
+        const updated = orders.map((o) =>
+          o.id === orderId ? { ...o, status: 'rejected', rejected_at: new Date().toISOString() } : o
+        );
+        localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(updated));
+      }
+    } catch (e) {}
+  }
+
+  return true;
 }
