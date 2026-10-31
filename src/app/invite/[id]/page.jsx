@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getInvitationById } from '@/lib/supabase';
 import { getTemplateById } from '@/templates/registry';
 import PublicInviteWrapper from '@/components/PublicInviteWrapper';
+import ClientInviteResolver from '@/components/ClientInviteResolver';
 import { Lock, AlertCircle, ArrowLeft, Sparkles, Clock } from 'lucide-react';
 
 /**
@@ -47,26 +48,9 @@ export async function generateMetadata({ params }) {
 export default async function PublicInvitePage({ params }) {
   const invitation = await getInvitationById(params.id);
 
-  // 1. Invitation does not exist
+  // 1. If invitation is not found in server cache, resolve from client storage
   if (!invitation) {
-    return (
-      <div className="min-h-screen bg-ivory flex items-center justify-center p-6 text-center text-espresso">
-        <div className="max-w-md p-8 rounded-3xl bg-paper border border-sand-300 shadow-xl">
-          <AlertCircle className="w-12 h-12 text-olive mx-auto mb-4" />
-          <h1 className="font-serif text-2xl font-bold text-espresso mb-2">Invitation Not Found</h1>
-          <p className="font-sans text-xs sm:text-sm text-espresso/70 mb-6 leading-relaxed">
-            The invitation link you opened is invalid or may have been removed by the host. Please check the URL and try again.
-          </p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-espresso hover:bg-espresso-dark text-paper font-sans text-xs font-semibold uppercase tracking-wider shadow-xs"
-          >
-            <ArrowLeft className="w-4 h-4 text-sand-300" />
-            <span>Return to Studio Home</span>
-          </Link>
-        </div>
-      </div>
-    );
+    return <ClientInviteResolver invitationId={params.id} />;
   }
 
   // 2. Invitation is Awaiting Payment Verification (Mode A)

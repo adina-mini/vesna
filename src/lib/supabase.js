@@ -18,9 +18,66 @@ export const supabase = isSupabaseConfigured
 const LOCAL_STORAGE_KEY = 'shadii_platform_invitations';
 const LOCAL_RSVP_KEY = 'shadii_platform_rsvps';
 
+export const INITIAL_SEEDED_INVITATIONS = {
+  'inv_fatima_sharjeel': {
+    id: 'inv_fatima_sharjeel',
+    template_id: 'royal-burgundy-barat',
+    title: "Fatima & Sharjeel's Grand Barat",
+    event_type: 'wedding',
+    status: 'published',
+    published_at: '2026-10-27T10:00:00.000Z',
+    updated_at: '2026-10-30T16:00:00.000Z',
+    data: {
+      bride_name: 'Fatima Noor',
+      groom_name: 'Sharjeel Khan',
+      event_title: 'The Grand Barat Ceremony',
+      event_date_display: 'Saturday, November 7, 2026',
+      venue_name: 'The Grand Palm Royale, Lahore',
+      hero_image: '/assets/barat-stage-venue.jpg',
+    },
+    media: {},
+  },
+  'inv_ayesha_hamza': {
+    id: 'inv_ayesha_hamza',
+    template_id: 'noor-walima',
+    title: "Ayesha & Hamza's Walima Reception",
+    event_type: 'wedding',
+    status: 'published',
+    published_at: '2026-10-25T10:00:00.000Z',
+    updated_at: '2026-10-29T12:00:00.000Z',
+    data: {
+      bride_name: 'Ayesha Siddiqui',
+      groom_name: 'Hamza Tariq',
+      event_title: 'The Walima Reception',
+      event_date_display: 'Sunday, November 8, 2026',
+      venue_name: 'Pearl Continental Crystal Ballroom',
+      hero_image: '/assets/walima-venue.jpg',
+    },
+    media: {},
+  },
+  'inv_zara_mehndi': {
+    id: 'inv_zara_mehndi',
+    template_id: 'festive-mehndi',
+    title: "Zara's Rung-e-Mehndi",
+    event_type: 'wedding',
+    status: 'draft',
+    published_at: null,
+    updated_at: '2026-10-30T14:00:00.000Z',
+    data: {
+      bride_name: 'Zara Ahmed',
+      groom_name: 'Daniyal Malik',
+      event_title: 'Rung-e-Mehndi & Sangeet',
+      event_date_display: 'Friday, November 6, 2026',
+      venue_name: 'Haveli Barood Khana, Lahore',
+      hero_image: '/assets/qawwali-hero.jpg',
+    },
+    media: {},
+  },
+};
+
 // In-memory fallback for server-side execution if no Supabase configured
 if (typeof globalThis !== 'undefined' && !globalThis.__SHADII_STORE__) {
-  globalThis.__SHADII_STORE__ = new Map();
+  globalThis.__SHADII_STORE__ = new Map(Object.entries(INITIAL_SEEDED_INVITATIONS));
 }
 if (typeof globalThis !== 'undefined' && !globalThis.__SHADII_RSVPS__) {
   globalThis.__SHADII_RSVPS__ = new Map();
@@ -30,12 +87,14 @@ const getStore = () => {
   if (typeof window !== 'undefined') {
     try {
       const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return data ? JSON.parse(data) : {};
+      const parsed = data ? JSON.parse(data) : {};
+      return { ...INITIAL_SEEDED_INVITATIONS, ...parsed };
     } catch (e) {
-      return {};
+      return { ...INITIAL_SEEDED_INVITATIONS };
     }
   }
-  return Object.fromEntries(globalThis.__SHADII_STORE__ || []);
+  const inMemory = Object.fromEntries(globalThis.__SHADII_STORE__ || []);
+  return { ...INITIAL_SEEDED_INVITATIONS, ...inMemory };
 };
 
 const setStore = (store) => {
@@ -108,6 +167,18 @@ export async function saveInvitation(invitation) {
   const store = getStore();
   store[record.id] = record;
   setStore(store);
+
+  // Sync to server memory API in client browser for SSR resilience
+  if (typeof window !== 'undefined' && !isSupabaseConfigured) {
+    try {
+      fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record),
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
   return record;
 }
 
@@ -276,70 +347,8 @@ export async function listAllInvitationsForAdmin() {
     }
   }
 
-  // Fallback to local store with initial demo data if empty
-  let store = getStore();
-  if (Object.keys(store).length === 0) {
-    // Seed initial realistic invitations for demo/dev exploration
-    const initialSeed = {
-      'inv_fatima_sharjeel': {
-        id: 'inv_fatima_sharjeel',
-        template_id: 'royal-burgundy-barat',
-        title: "Fatima & Sharjeel's Grand Barat",
-        event_type: 'wedding',
-        status: 'published',
-        published_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
-        updated_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-        data: {
-          bride_name: 'Fatima Noor',
-          groom_name: 'Sharjeel Khan',
-          event_title: 'The Grand Barat Ceremony',
-          event_date_display: 'Saturday, November 7, 2026',
-          venue_name: 'The Grand Palm Royale, Lahore',
-          hero_image: '/assets/barat-stage-venue.jpg',
-        },
-        media: {},
-      },
-      'inv_ayesha_hamza': {
-        id: 'inv_ayesha_hamza',
-        template_id: 'noor-walima',
-        title: "Ayesha & Hamza's Walima Reception",
-        event_type: 'wedding',
-        status: 'published',
-        published_at: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
-        updated_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-        data: {
-          bride_name: 'Ayesha Siddiqui',
-          groom_name: 'Hamza Tariq',
-          event_title: 'The Walima Reception',
-          event_date_display: 'Sunday, November 8, 2026',
-          venue_name: 'Pearl Continental Crystal Ballroom',
-          hero_image: '/assets/walima-venue.jpg',
-        },
-        media: {},
-      },
-      'inv_zara_mehndi': {
-        id: 'inv_zara_mehndi',
-        template_id: 'festive-mehndi',
-        title: "Zara's Rung-e-Mehndi",
-        event_type: 'wedding',
-        status: 'draft',
-        published_at: null,
-        updated_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-        data: {
-          bride_name: 'Zara Ahmed',
-          groom_name: 'Daniyal Malik',
-          event_title: 'Rung-e-Mehndi & Sangeet',
-          event_date_display: 'Friday, November 6, 2026',
-          venue_name: 'Haveli Barood Khana, Lahore',
-          hero_image: '/assets/qawwali-hero.jpg',
-        },
-        media: {},
-      },
-    };
-    setStore(initialSeed);
-    store = initialSeed;
-  }
-
+  // Fallback to local store with initial demo data
+  const store = getStore();
   return Object.values(store).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 }
 
