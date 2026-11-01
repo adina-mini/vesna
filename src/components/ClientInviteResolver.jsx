@@ -134,12 +134,11 @@ export default function ClientInviteResolver({ invitationId }) {
   }
 
   // Published
-  const template = getTemplateById(invitation.template_id);
   const personalizedData = invitation.data || {};
 
   return (
     <PublicInviteWrapper
-      template={template}
+      templateId={invitation.template_id}
       personalizedData={personalizedData}
       invitationId={invitation.id}
     />

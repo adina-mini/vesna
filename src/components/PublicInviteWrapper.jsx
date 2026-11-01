@@ -2,11 +2,16 @@
 
 import React, { useState } from 'react';
 import IntroGate from '@/components/IntroGate';
+import { getTemplateById } from '@/templates/registry';
 
-export default function PublicInviteWrapper({ template, personalizedData = {}, invitationId }) {
+export default function PublicInviteWrapper({ template: initialTemplate, templateId, personalizedData = {}, invitationId }) {
   const [cardRevealed, setCardRevealed] = useState(false);
 
-  if (!template) return null;
+  const template = initialTemplate?.Component
+    ? initialTemplate
+    : getTemplateById(templateId || initialTemplate?.id);
+
+  if (!template || !template.Component) return null;
   const TemplateComponent = template.Component;
 
   // Determine intro artwork tailored to the event (signature gold emblem)

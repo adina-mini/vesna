@@ -126,12 +126,11 @@ export default async function PublicInvitePage({ params }) {
   }
 
   // 3. Published Invitation -> Dynamically Render Chosen Template via PublicInviteWrapper!
-  const template = getTemplateById(invitation.template_id);
   const personalizedData = invitation.data || {};
 
   return (
     <PublicInviteWrapper
-      template={template}
+      templateId={invitation.template_id}
       personalizedData={personalizedData}
       invitationId={invitation.id}
     />
