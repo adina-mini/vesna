@@ -11,6 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { getAllTemplates, getTemplateById } from '@/templates/registry';
+import { fetchCustomTemplates } from '@/lib/customTemplates';
 import CustomizationForm from '@/components/CustomizationForm';
 import SampleCardShowcase from '@/components/SampleCardShowcase';
 import PublishModal from '@/components/PublishModal';
@@ -26,7 +27,14 @@ function CreatePageInner() {
   const editIdParam = searchParams.get('edit');
 
   const [selectedTemplateId, setSelectedTemplateId] = useState(templateParam);
+  const [availableTemplates, setAvailableTemplates] = useState(() => getAllTemplates());
   const template = getTemplateById(selectedTemplateId);
+
+  useEffect(() => {
+    fetchCustomTemplates().then(() => {
+      setAvailableTemplates(getAllTemplates());
+    });
+  }, []);
 
   // Customer draft form state (NEVER passed into SampleCardShowcase)
   const [formData, setFormData] = useState({
@@ -219,7 +227,7 @@ function CreatePageInner() {
     executePublish(user);
   };
 
-  const allTemplates = getAllTemplates();
+  const allTemplates = availableTemplates.length > 0 ? availableTemplates : getAllTemplates();
 
   return (
     <div className="py-10 px-4 sm:px-6 max-w-7xl mx-auto">

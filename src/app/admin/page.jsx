@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import VesnaLogo from '@/components/VesnaLogo';
-import { TEMPLATES } from '@/templates/registry';
+import { TEMPLATES, getAllTemplates } from '@/templates/registry';
+import AddTemplateModal from '@/components/AddTemplateModal';
+import { fetchCustomTemplates, removeCustomTemplate } from '@/lib/customTemplates';
 import {
   listAllInvitationsForAdmin,
   updateInvitationStatus,
@@ -74,6 +76,8 @@ export default function AdminPage() {
 
   // Suite Catalog Customization State (Stored locally)
   const [suiteOverrides, setSuiteOverrides] = useState({});
+  const [allCatalogSuites, setAllCatalogSuites] = useState(() => getAllTemplates());
+  const [isAddTemplateOpen, setIsAddTemplateOpen] = useState(false);
 
   // Platform Settings State
   const [settings, setSettings] = useState({
@@ -130,6 +134,9 @@ export default function AdminPage() {
 
       const savedSettings = getPlatformSettings();
       setSettings(savedSettings);
+
+      await fetchCustomTemplates();
+      setAllCatalogSuites(getAllTemplates());
 
       const savedSuites = localStorage.getItem('vesna_suite_overrides');
       if (savedSuites) {
@@ -283,7 +290,7 @@ export default function AdminPage() {
     const totalGuestsAttending = rsvps
       .filter((r) => r.attendance === 'attending')
       .reduce((sum, r) => sum + (parseInt(r.guest_count, 10) || 1), 0);
-    const suitesCount = TEMPLATES.length;
+    const suitesCount = allCatalogSuites.length || TEMPLATES.length;
     const pendingOrders = orders.filter((o) => o.status === 'pending').length;
     const verifiedOrders = orders.filter((o) => o.status === 'verified').length;
     const totalRevenue = verifiedOrders * (parseInt(settings?.suitePricePkr || '2500', 10) || 2500);
@@ -301,7 +308,16 @@ export default function AdminPage() {
       totalRevenue,
       conversionRate: total > 0 ? Math.round((published / total) * 100) : 0,
     };
-  }, [invitations, rsvps, orders, settings]);
+  }, [invitations, rsvps, orders, settings, allCatalogSuites]);
+
+  // Delete Custom Bespoke Suite
+  const handleDeleteCustomSuite = async (suiteId, suiteName) => {
+    if (window.confirm(`Are you sure you want to permanently delete custom suite "${suiteName}" from the atelier catalog?`)) {
+      await removeCustomTemplate(suiteId);
+      setAllCatalogSuites(getAllTemplates());
+      showNotice(`Custom suite "${suiteName}" removed from catalog.`);
+    }
+  };
 
   // Export CSV Data
   const exportCsv = () => {
@@ -604,7 +620,7 @@ export default function AdminPage() {
             }`}
           >
             <Sliders className="w-4 h-4" />
-            <span>Suite Catalog Controls (15)</span>
+            <span>Suite Catalog Controls ({allCatalogSuites.length || TEMPLATES.length})</span>
           </button>
 
           <button
@@ -937,18 +953,36 @@ export default function AdminPage() {
         {/* =================================================================== */}
         {activeTab === 'suites' && (
           <div className="space-y-6">
-            <div className="p-4 rounded-2xl bg-sand-100/90 border border-sand-300 text-xs text-espresso/80 flex items-center justify-between">
-              <span>
-                <strong>Suite Catalog Controls:</strong> Toggle suites active/inactive to control availability in the directory, or mark suites as &ldquo;Featured&rdquo; to highlight them on the homepage.
-              </span>
+            <div className="p-4 sm:p-5 rounded-2xl bg-sand-100/90 border border-sand-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-serif text-base font-bold text-espresso">Atelier Suite Catalog</h3>
+                  <span className="px-2.5 py-0.5 rounded-full bg-sand-200 text-espresso text-[11px] font-sans font-bold">
+                    {allCatalogSuites.length} Suites Total
+                  </span>
+                </div>
+                <p className="font-sans text-xs text-espresso/70">
+                  Manage platform catalog, feature designs, or craft new bespoke celebration suites dynamically.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAddTemplateOpen(true)}
+                className="px-4 py-2.5 rounded-full bg-gold-500 hover:bg-gold-600 text-espresso font-sans text-xs font-bold uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>+ Craft Bespoke Suite</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {TEMPLATES.map((suite) => {
+              {allCatalogSuites.map((suite) => {
                 const suiteId = suite.id;
                 const override = suiteOverrides[suiteId] || {};
                 const isInactive = Boolean(override.inactive);
                 const isFeatured = Boolean(override.featured || suite.featured);
+                const isCustom = Boolean(suite.isCustom);
 
                 return (
                   <div
@@ -961,9 +995,17 @@ export default function AdminPage() {
                   >
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <span className="px-2.5 py-0.5 rounded-full bg-sand-100 border border-sand-200 text-[10px] font-sans font-bold uppercase tracking-wider text-olive">
-                          {suite.category}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="px-2.5 py-0.5 rounded-full bg-sand-100 border border-sand-200 text-[10px] font-sans font-bold uppercase tracking-wider text-olive">
+                            {suite.category}
+                          </span>
+
+                          {isCustom && (
+                            <span className="px-2 py-0.5 rounded-full bg-olive/10 border border-olive/30 text-olive text-[10px] font-sans font-bold uppercase tracking-wider">
+                              Custom Bespoke
+                            </span>
+                          )}
+                        </div>
 
                         {isFeatured && (
                           <span className="px-2 py-0.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-700 text-[10px] font-sans font-bold uppercase tracking-wider flex items-center gap-1">
@@ -1014,14 +1056,27 @@ export default function AdminPage() {
                         {isFeatured ? '★ Featured' : 'Feature'}
                       </button>
 
-                      <Link
-                        href={`/create?template=${suiteId}`}
-                        target="_blank"
-                        className="p-1.5 rounded-lg bg-sand-100 hover:bg-sand-200 text-espresso/70 hover:text-espresso transition-colors"
-                        title="Preview Suite in Studio"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Link>
+                      <div className="flex items-center gap-1">
+                        <Link
+                          href={`/create?template=${suiteId}`}
+                          target="_blank"
+                          className="p-1.5 rounded-lg bg-sand-100 hover:bg-sand-200 text-espresso/70 hover:text-espresso transition-colors"
+                          title="Preview Suite in Studio"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Link>
+
+                        {isCustom && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCustomSuite(suiteId, suite.name)}
+                            className="p-1.5 rounded-lg text-espresso/40 hover:text-burgundy hover:bg-burgundy/10 transition-colors cursor-pointer"
+                            title="Delete Bespoke Suite"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -1318,6 +1373,18 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* ===================================================================== */}
+      {/* CRAFT BESPOKE TEMPLATE SUITE MODAL                                    */}
+      {/* ===================================================================== */}
+      <AddTemplateModal
+        isOpen={isAddTemplateOpen}
+        onClose={() => setIsAddTemplateOpen(false)}
+        onCreated={(newSuite) => {
+          setAllCatalogSuites(getAllTemplates());
+          showNotice(`✅ Bespoke suite "${newSuite.name}" successfully crafted & published to catalog!`);
+        }}
+      />
     </div>
   );
 }

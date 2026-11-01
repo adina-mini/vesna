@@ -15,6 +15,8 @@ import CelestialMidnightTemplate from './CelestialMidnightTemplate';
 import QawwaliTemplate from './QawwaliTemplate';
 import MayunTemplate from './MayunTemplate';
 import BridalShowerTemplate from './BridalShowerTemplate';
+import DynamicCustomTemplate from './DynamicCustomTemplate';
+import { getCustomTemplatesSync } from '@/lib/customTemplates';
 
 export const TEMPLATES = [
   {
@@ -698,12 +700,40 @@ export const TEMPLATES = [
   },
 ];
 
-export function getTemplateById(id) {
-  return TEMPLATES.find((t) => t.id === id) || TEMPLATES[0];
+export function wrapCustomTemplate(t) {
+  if (!t) return null;
+  return {
+    ...t,
+    Component: function DynamicSuiteWrapper(props) {
+      return <DynamicCustomTemplate {...props} templateConfig={t} />;
+    },
+  };
 }
 
 export function getAllTemplates() {
-  return TEMPLATES;
+  const custom = getCustomTemplatesSync().map(wrapCustomTemplate);
+  const customFiltered = custom.filter(
+    (c) => !TEMPLATES.some((builtin) => builtin.id === c.id)
+  );
+  return [...TEMPLATES, ...customFiltered];
+}
+
+export function getTemplateById(id) {
+  if (!id) return TEMPLATES[0];
+
+  // 1. Check built-ins
+  const builtin = TEMPLATES.find((t) => t.id === id);
+  if (builtin) return builtin;
+
+  // 2. Check custom templates
+  const customList = getCustomTemplatesSync();
+  const custom = customList.find((t) => t.id === id);
+  if (custom) {
+    return wrapCustomTemplate(custom);
+  }
+
+  // 3. Fallback
+  return TEMPLATES[0];
 }
 
 export function getCategories() {

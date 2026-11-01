@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -12,12 +12,18 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { getAllTemplates, getCategories } from '@/templates/registry';
+import { fetchCustomTemplates } from '@/lib/customTemplates';
 
 export default function TemplatesDirectoryPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [allTemplates, setAllTemplates] = useState(() => getAllTemplates());
 
-  const allTemplates = getAllTemplates();
+  useEffect(() => {
+    fetchCustomTemplates().then(() => {
+      setAllTemplates(getAllTemplates());
+    });
+  }, []);
   const categories = getCategories();
 
   // Category counts
