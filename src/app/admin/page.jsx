@@ -474,6 +474,14 @@ export default function AdminPage() {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setIsAddTemplateOpen(true)}
+              className="px-4 py-2.5 rounded-full bg-gold-500 hover:bg-gold-600 text-espresso text-xs font-sans font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md"
+            >
+              <Sparkles className="w-4 h-4 text-espresso" />
+              <span>+ Craft Bespoke Suite</span>
+            </button>
+
+            <button
               onClick={loadPlatformData}
               className="px-4 py-2.5 rounded-full bg-paper border border-sand-300 text-espresso text-xs font-sans font-semibold flex items-center gap-2 hover:bg-sand-100 transition-colors cursor-pointer shadow-2xs"
             >
