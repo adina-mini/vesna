@@ -92,7 +92,7 @@ export default function CustomizationForm({
 
     try {
       const optimized = await optimizeImageFile(file, 1600, 0.88);
-      
+
       setMediaUploads((prev) => ({
         ...prev,
         [slotKey]: {
@@ -190,19 +190,17 @@ export default function CustomizationForm({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3.5 sm:px-4 py-2 rounded-full font-sans text-xs tracking-wider uppercase transition-all flex items-center gap-2 cursor-pointer ${
-                isActive
+              className={`px-3.5 sm:px-4 py-2 rounded-full font-sans text-xs tracking-wider uppercase transition-all flex items-center gap-2 cursor-pointer ${isActive
                   ? 'bg-espresso text-paper shadow-xs font-semibold ring-1 ring-gold-500/30'
                   : 'bg-sand-100/80 text-espresso/70 hover:text-espresso hover:bg-sand-200 border border-sand-200 font-medium'
-              }`}
+                }`}
             >
               <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-sand-300' : 'text-olive'}`} />
               <span>{tab.label}</span>
               {tab.completed && (
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isActive ? 'bg-gold-400' : 'bg-emerald-600'
-                  }`}
+                  className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-gold-400' : 'bg-emerald-600'
+                    }`}
                   title="Section details entered"
                 />
               )}
@@ -344,11 +342,10 @@ export default function CustomizationForm({
                         key={preset.text}
                         type="button"
                         onClick={() => handleChange('urdu_ceremony_preset', preset.text)}
-                        className={`p-2.5 rounded-xl border text-right transition-all cursor-pointer flex flex-col justify-between ${
-                          formData.urdu_ceremony_preset === preset.text
+                        className={`p-2.5 rounded-xl border text-right transition-all cursor-pointer flex flex-col justify-between ${formData.urdu_ceremony_preset === preset.text
                             ? 'bg-paper border-olive shadow-xs text-espresso font-semibold'
                             : 'bg-sand-50/70 border-sand-200 text-espresso/70 hover:bg-paper'
-                        }`}
+                          }`}
                       >
                         <span className="text-[10px] font-sans text-olive uppercase tracking-wider text-left block mb-0.5">
                           {preset.label}
@@ -736,11 +733,10 @@ export default function CustomizationForm({
                   onDragOver={(e) => handleDragOver(slotKey, e)}
                   onDragLeave={(e) => handleDragLeave(slotKey, e)}
                   onDrop={(e) => handleDrop(slotKey, e)}
-                  className={`p-5 rounded-3xl bg-sand-50/80 border transition-all duration-300 flex flex-col justify-between ${
-                    isDragOver
+                  className={`p-5 rounded-3xl bg-sand-50/80 border transition-all duration-300 flex flex-col justify-between ${isDragOver
                       ? 'border-olive bg-sand-100 shadow-md ring-2 ring-olive/20'
                       : 'border-sand-300/80'
-                  }`}
+                    }`}
                 >
                   <div className="mb-3">
                     <span className="font-serif text-sm font-bold text-espresso block">
@@ -793,11 +789,10 @@ export default function CustomizationForm({
                       </div>
                     </div>
                   ) : (
-                    <label className={`h-44 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer p-4 text-center group ${
-                      isDragOver
+                    <label className={`h-44 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer p-4 text-center group ${isDragOver
                         ? 'border-olive bg-sand-200/80 scale-102'
                         : 'border-sand-300 hover:border-olive bg-paper hover:bg-sand-100/70'
-                    }`}>
+                      }`}>
                       <div className="w-10 h-10 rounded-full bg-sand-100 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
                         <Upload className="w-5 h-5 text-olive" />
                       </div>

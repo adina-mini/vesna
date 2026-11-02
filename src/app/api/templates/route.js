@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 const DATA_FILE_PATH = path.join(process.cwd(), 'src', 'data', 'customTemplates.json');
 
@@ -40,8 +41,40 @@ function writeTemplatesToFile(templates) {
 
 export async function GET() {
   try {
-    const list = readTemplatesFromFile();
-    return NextResponse.json(list);
+    const fileList = readTemplatesFromFile();
+
+    // If Supabase is connected, fetch and merge cloud custom templates
+    if (isSupabaseConfigured && supabase) {
+      const { data: dbTemplates, error } = await supabase
+        .from('custom_templates')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(dbTemplates)) {
+        const map = new Map();
+        fileList.forEach((t) => map.set(t.id, t));
+        dbTemplates.forEach((t) => {
+          map.set(t.id, {
+            id: t.id,
+            name: t.name,
+            category: t.category,
+            categoryLabel: t.category_label,
+            description: t.description,
+            badge: t.badge,
+            palette: t.palette,
+            themeStyle: t.theme_style,
+            thumbnail: t.thumbnail,
+            isCustom: true,
+            slots: t.slots || {},
+            sampleData: t.sample_data || {},
+            created_at: t.created_at,
+          });
+        });
+        return NextResponse.json(Array.from(map.values()));
+      }
+    }
+
+    return NextResponse.json(fileList);
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
@@ -107,9 +140,27 @@ export async function POST(request) {
       },
     };
 
-    // Filter out existing if same ID
+    // 1. Save to local JSON file
     const updated = [newTemplate, ...currentList.filter((t) => t.id !== id)];
     writeTemplatesToFile(updated);
+
+    // 2. Save directly to Supabase cloud database if configured
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('custom_templates').upsert({
+        id: newTemplate.id,
+        name: newTemplate.name,
+        category: newTemplate.category,
+        category_label: newTemplate.categoryLabel,
+        description: newTemplate.description,
+        badge: newTemplate.badge,
+        palette: newTemplate.palette,
+        theme_style: newTemplate.themeStyle,
+        thumbnail: newTemplate.thumbnail,
+        slots: newTemplate.slots,
+        sample_data: newTemplate.sampleData,
+        is_custom: true,
+      });
+    }
 
     return NextResponse.json(newTemplate, { status: 201 });
   } catch (e) {
@@ -129,9 +180,12 @@ export async function DELETE(request) {
     const updated = currentList.filter((t) => t.id !== id);
     writeTemplatesToFile(updated);
 
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('custom_templates').delete().eq('id', id);
+    }
+
     return NextResponse.json({ success: true, removedId: id });
   } catch (e) {
     return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 });
   }
 }
-
