@@ -30,11 +30,11 @@ const PREVIEW_THEMES = {
     date: 'Saturday, November 7, 2026',
     time: '7:30 PM Onwards',
     venue: 'The Grand Palm Royale, Lahore',
-    image: '/assets/barat-stage-venue.jpg',
-    imageAlt: 'Royal Burgundy and Emerald Arch Wedding Stage',
+    image: '/assets/couple-hero.jpg',
+    imageAlt: 'Royal Velvet and Gold Barat Couple Portrait',
     quranVerse: 'وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً',
     verseRef: 'Surah Ar-Rum • 30:21',
-    templateLink: '/create?template=royal-burgundy-barat'
+    templateLink: '/create?template=royal-burgundy'
   },
   walima: {
     id: 'walima',
@@ -47,8 +47,8 @@ const PREVIEW_THEMES = {
     date: 'Sunday, November 8, 2026',
     time: '8:00 PM Onwards',
     venue: 'Pearl Continental Crystal Ballroom',
-    image: '/assets/walima-venue.jpg',
-    imageAlt: 'Grand Illuminated Golden Chandelier Ballroom Stage',
+    image: '/assets/reception-couple.jpg',
+    imageAlt: 'Noor-e-Aroosi Walima Reception Couple Portrait',
     quranVerse: 'وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً',
     verseRef: 'Surah Ar-Rum • 30:21',
     templateLink: '/create?template=noor-walima'
