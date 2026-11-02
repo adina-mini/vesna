@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import UrduCalligraphyHeader from '@/components/UrduCalligraphyHeader';
 import {
   Sparkles,
   Music,
@@ -156,6 +157,9 @@ export default function FestiveMehndiTemplate({ data, isSample = false, invitati
             <p className="font-cinzel text-xs tracking-[0.25em] uppercase text-marigold-600 font-bold mb-1">
               Let The Celebrations Begin!
             </p>
+
+            {/* Optional Regal Urdu Calligraphy */}
+            <UrduCalligraphyHeader data={data} className="text-emeraldGreen-900" />
 
             <h1 className="font-script text-5xl sm:text-6xl text-emeraldGreen-900 leading-tight my-2">
               {brideName}

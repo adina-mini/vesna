@@ -267,3 +267,4 @@ export async function GET(request) {
     return new Response(`Failed to generate image: ${e.message}`, { status: 500 });
   }
 }
+

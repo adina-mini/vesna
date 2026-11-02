@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import UrduCalligraphyHeader from '@/components/UrduCalligraphyHeader';
 import {
   Sparkles,
   Clock,
@@ -157,6 +158,9 @@ export default function EmeraldRoyalBaratTemplate({ data, isSample = false, invi
             <p className="font-arabic text-2xl text-[#0C3B2E] leading-loose">
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
             </p>
+
+            {/* Optional Regal Urdu Calligraphy */}
+            <UrduCalligraphyHeader data={data} className="text-[#0C3B2E]" />
 
             <p className="font-cinzel text-[11px] uppercase tracking-[0.25em] text-[#22252A] font-semibold mt-2">
               The Barat &amp; Nikah Ceremony of

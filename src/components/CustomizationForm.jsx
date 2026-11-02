@@ -294,6 +294,134 @@ export default function CustomizationForm({
             </div>
           </div>
 
+          {/* ================================================================= */}
+          {/* OPTIONAL URDU NASTALIQ CALLIGRAPHY SUITE (100% OPTIONAL)          */}
+          {/* ================================================================= */}
+          <div className="pt-3 border-t border-sand-200">
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-sand-50/80 border border-sand-300">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-sand-200/70 border border-sand-300 text-espresso font-nastaliq text-base flex items-center justify-center font-bold">
+                  ن
+                </div>
+                <div className="text-left">
+                  <label htmlFor="urdu-toggle" className="font-sans text-xs font-semibold text-espresso block cursor-pointer">
+                    Traditional Urdu Calligraphy Header
+                  </label>
+                  <span className="text-[11px] text-espresso/60 block">
+                    Optional • Renders authentic Nastaliq calligraphy on your card
+                  </span>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="urdu-toggle"
+                  checked={Boolean(formData.enable_urdu_calligraphy)}
+                  onChange={(e) => handleChange('enable_urdu_calligraphy', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-sand-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-sand-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive"></div>
+              </label>
+            </div>
+
+            {formData.enable_urdu_calligraphy && (
+              <div className="mt-4 p-4 rounded-2xl bg-sand-100/70 border border-sand-300 space-y-4 animate-in fade-in duration-200 text-left">
+                {/* 1. Quick-Pick Ceremonial Calligraphy Presets */}
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-espresso mb-2">
+                    Select Ceremonial Urdu Verse / Title:
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      { label: 'Royal Barat Couplet', text: 'گر قبول افتد زہے عز و شرف' },
+                      { label: 'Barat Ceremony', text: 'تقریبِ بارات و رخصتی' },
+                      { label: 'Walima Reception', text: 'دعوتِ ولیمہ و طعام' },
+                      { label: 'Mehndi & Mayun', text: 'جشنِ حنا و رنگِ مایوں' },
+                      { label: 'Nikah Ceremony', text: 'محفلِ عقدِ نکاح مسنون' },
+                      { label: 'Quranic Blessing', text: 'وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.text}
+                        type="button"
+                        onClick={() => handleChange('urdu_ceremony_preset', preset.text)}
+                        className={`p-2.5 rounded-xl border text-right transition-all cursor-pointer flex flex-col justify-between ${
+                          formData.urdu_ceremony_preset === preset.text
+                            ? 'bg-paper border-olive shadow-xs text-espresso font-semibold'
+                            : 'bg-sand-50/70 border-sand-200 text-espresso/70 hover:bg-paper'
+                        }`}
+                      >
+                        <span className="text-[10px] font-sans text-olive uppercase tracking-wider text-left block mb-0.5">
+                          {preset.label}
+                        </span>
+                        <span className="font-nastaliq text-sm leading-relaxed text-espresso block" dir="rtl">
+                          {preset.text}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Optional Couple Names in Urdu */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-espresso mb-1">
+                      Couple Names in Urdu (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      value={formData.urdu_couple_names || ''}
+                      onChange={(e) => handleChange('urdu_couple_names', e.target.value)}
+                      placeholder="مثال: فاطمہ حفیظ اور راؤ شرجیل"
+                      className="w-full px-4 py-2.5 rounded-xl bg-paper border border-sand-300 text-espresso placeholder-espresso/40 font-nastaliq text-sm leading-loose focus:outline-none focus:ring-2 focus:ring-espresso"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-espresso mb-1">
+                      Welcoming Family Line (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      value={formData.urdu_hosts || ''}
+                      onChange={(e) => handleChange('urdu_hosts', e.target.value)}
+                      placeholder="مثال: چشمِ براہ: جملہ اہل خانہ"
+                      className="w-full px-4 py-2.5 rounded-xl bg-paper border border-sand-300 text-espresso placeholder-espresso/40 font-nastaliq text-sm leading-loose focus:outline-none focus:ring-2 focus:ring-espresso"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Preview Box */}
+                {(formData.urdu_ceremony_preset || formData.urdu_couple_names || formData.urdu_hosts) && (
+                  <div className="p-3.5 rounded-xl bg-paper border border-sand-300 text-center shadow-xs" dir="rtl">
+                    <span className="text-[10px] font-sans text-olive uppercase tracking-widest block mb-1">
+                      ✦ Nastaliq Calligraphy Preview on Card ✦
+                    </span>
+                    <p className="font-nastaliq text-xs text-[#D4AF37] font-bold">
+                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                    </p>
+                    {formData.urdu_ceremony_preset && (
+                      <p className="font-nastaliq text-sm text-espresso font-medium leading-relaxed my-0.5">
+                        {formData.urdu_ceremony_preset}
+                      </p>
+                    )}
+                    {formData.urdu_couple_names && (
+                      <h4 className="font-nastaliq text-xl text-espresso font-bold leading-loose my-0.5">
+                        {formData.urdu_couple_names}
+                      </h4>
+                    )}
+                    {formData.urdu_hosts && (
+                      <p className="font-nastaliq text-xs text-espresso/70 leading-relaxed">
+                        {formData.urdu_hosts}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="pt-4 flex justify-end">
             <button
               type="button"

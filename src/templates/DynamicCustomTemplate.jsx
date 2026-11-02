@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import UrduCalligraphyHeader from '@/components/UrduCalligraphyHeader';
 import {
   Sparkles,
   Heart,
@@ -192,6 +193,9 @@ export default function DynamicCustomTemplate({
               </span>
             </div>
           </div>
+
+          {/* Optional Regal Urdu Calligraphy */}
+          <UrduCalligraphyHeader data={data} />
 
           {/* Couple Names */}
           <div className="space-y-2 pt-2">

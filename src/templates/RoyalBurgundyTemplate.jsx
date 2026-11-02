@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import UrduCalligraphyHeader from '@/components/UrduCalligraphyHeader';
 import {
   Sparkles,
   Heart,
@@ -288,6 +289,9 @@ export default function RoyalBurgundyTemplate({ data, isSample = false, invitati
             <p className="font-cormorant italic text-sm text-wine-900/80 mb-3">
               cordially invite you to celebrate the joyous wedding union of
             </p>
+
+            {/* Optional Regal Urdu Calligraphy */}
+            <UrduCalligraphyHeader data={data} className="text-wine-900" />
 
             {/* Couple Names */}
             <div className="my-3">

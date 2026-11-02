@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import UrduCalligraphyHeader from '@/components/UrduCalligraphyHeader';
 import {
   Sparkles,
   Heart,
@@ -157,6 +158,9 @@ export default function NoorWalimaTemplate({ data, isSample = false, invitationI
             <p className="font-cormorant italic text-sm text-wine-900/80 mb-2">
               Together with their families, cordially invite you to celebrate the union of
             </p>
+
+            {/* Optional Regal Urdu Calligraphy */}
+            <UrduCalligraphyHeader data={data} className="text-wine-900" />
 
             {/* Couple Names */}
             <h1 className="font-script text-5xl sm:text-6xl text-wine-950 leading-tight my-1">

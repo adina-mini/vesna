@@ -108,6 +108,7 @@ module.exports = {
         cinzel: ['"Cinzel"', 'serif'],
         cinzelDeco: ['"Cinzel Decorative"', 'serif'],
         amiri: ['"Amiri"', 'serif'],
+        nastaliq: ['"Noto Nastaliq Urdu"', '"Gulzar"', 'serif'],
         sans: ['"Montserrat"', 'sans-serif'],
       },
       boxShadow: {
