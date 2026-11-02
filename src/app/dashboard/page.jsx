@@ -389,7 +389,7 @@ export default function DashboardPage() {
                       </Link>
 
                       <a
-                        href={`https://wa.me/?text=${encodeURIComponent(`✨ You are cordially invited to celebrate with us! View our digital invitation here: ${typeof window !== 'undefined' ? window.location.origin : ''}/invite/${inv.id}`)}`}
+                        href={`https://wa.me/?text=${encodeURIComponent(`﷽\n\nWarmest greetings!\n\nWe warmly request the honour of your presence to celebrate the union of *${inv.data?.bride_name && inv.data?.groom_name ? `${inv.data.bride_name} & ${inv.data.groom_name}` : (inv.title || "Our Wedding")}*${inv.data?.event_date_display ? ` on ${inv.data.event_date_display}` : ""}${inv.data?.venue_name ? ` at ${inv.data.venue_name}` : ""}.\n\n✨ Tap below to view your personalized interactive invitation & RSVP:\n${typeof window !== "undefined" ? window.location.origin : ""}/invite/${inv.id}\n\n_With warm prayers & regards,_`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white font-sans text-[11px] font-semibold uppercase tracking-wider text-center flex items-center justify-center gap-1 shadow-2xs"

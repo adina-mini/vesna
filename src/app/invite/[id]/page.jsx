@@ -14,33 +14,88 @@ export async function generateMetadata({ params }) {
 
   if (!invitation || invitation.status !== 'published') {
     return {
-      title: 'Digital Wedding Invitation',
-      description: 'You are cordially invited to celebrate with us.',
+      title: 'Digital Invitation | VESNA Atelier',
+      description: 'You are cordially invited to celebrate with us. Tap to view your personalized digital invitation.',
+      openGraph: {
+        title: 'Digital Invitation | VESNA Atelier',
+        description: 'You are cordially invited to celebrate with us. Tap to view your personalized digital invitation.',
+        images: [
+          {
+            url: '/api/og?title=Digital%20Invitation&event=Celebration%20Suite&date=Honoured%20Presence&venue=VESNA%20Atelier&theme=gold',
+            width: 1200,
+            height: 630,
+            alt: 'VESNA Digital Invitation',
+          },
+        ],
+      },
     };
   }
 
   const data = invitation.data || {};
-  const title = data.bride_name && data.groom_name
-    ? `Wedding Invitation | ${data.bride_name} & ${data.groom_name}`
-    : invitation.title || 'Digital Invitation';
-  const desc = data.event_date_display && data.venue_name
-    ? `Warmly inviting you to celebrate on ${data.event_date_display} at ${data.venue_name}.`
-    : 'View our personalized digital invitation.';
+
+  // Resolve couple / honoree names
+  let coupleTitle = 'Wedding Invitation';
+  if (data.bride_name && data.groom_name) {
+    coupleTitle = `${data.bride_name} & ${data.groom_name}`;
+  } else if (data.child_name) {
+    coupleTitle = data.child_name;
+  } else if (data.honoree_name) {
+    coupleTitle = data.honoree_name;
+  } else if (invitation.title) {
+    coupleTitle = invitation.title;
+  }
+
+  // Resolve ceremony title
+  const eventTitle = data.ceremony_title || data.event_type || invitation.title || 'Grand Celebration';
+  const dateStr = data.event_date_display || data.event_date || 'Upcoming Celebration';
+  const venueStr = data.venue_name ? `${data.venue_name}${data.venue_city ? `, ${data.venue_city}` : ''}` : 'Special Venue';
+
+  // Map theme based on template_id
+  let themeKey = 'burgundy';
+  const tId = (invitation.template_id || '').toLowerCase();
+  if (tId.includes('emerald') || tId.includes('sage')) {
+    themeKey = 'emerald';
+  } else if (tId.includes('noir') || tId.includes('celestial') || tId.includes('midnight')) {
+    themeKey = 'noir';
+  } else if (tId.includes('gold') || tId.includes('mayun') || tId.includes('aqiqah')) {
+    themeKey = 'gold';
+  }
+
+  const ogImageUrl = `/api/og?title=${encodeURIComponent(coupleTitle)}&event=${encodeURIComponent(eventTitle)}&date=${encodeURIComponent(dateStr)}&venue=${encodeURIComponent(venueStr)}&theme=${encodeURIComponent(themeKey)}`;
+
+  const pageTitle = `💍 Invitation: ${coupleTitle} | VESNA`;
+  const pageDesc = `✨ Warmly requesting the honour of your presence on ${dateStr} at ${venueStr}. Tap to unlock your personalized digital invitation & RSVP online.`;
 
   return {
-    title,
-    description: desc,
+    title: pageTitle,
+    description: pageDesc,
     openGraph: {
-      title,
-      description: desc,
+      title: pageTitle,
+      description: pageDesc,
+      url: `/invite/${params.id}`,
+      siteName: 'VESNA Luxury Invitations',
       images: [
         {
-          url: data.hero_image || '/assets/couple-hero.jpg',
+          url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: title,
+          alt: coupleTitle,
+          type: 'image/png',
         },
       ],
+      locale: 'en_PK',
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: pageDesc,
+      images: [ogImageUrl],
+    },
+    other: {
+      'og:image:width': '1200',
+      'og:image:height': '630',
+      'og:image:type': 'image/png',
     },
   };
 }
@@ -125,7 +180,7 @@ export default async function PublicInvitePage({ params }) {
     );
   }
 
-  // 3. Published Invitation -> Dynamically Render Chosen Template via PublicInviteWrapper!
+  // 4. Published Invitation -> Dynamically Render Chosen Template via PublicInviteWrapper!
   const personalizedData = invitation.data || {};
 
   return (

@@ -339,6 +339,7 @@ function CreatePageInner() {
         onClose={() => setPublishModalOpen(false)}
         invitationId={publishedInviteId}
         invitationTitle={formData.bride_name}
+        invitationData={formData}
       />
 
       {/* PAYMENT & PROOF SUBMISSION MODAL (Mode A: Strict Activation) */}
