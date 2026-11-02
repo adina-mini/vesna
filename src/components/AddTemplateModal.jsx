@@ -355,7 +355,8 @@ export default function AddTemplateModal({ isOpen, onClose, onCreated }) {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to save template suite to atelier database.');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to save template suite to atelier database.');
       }
 
       const created = await res.json();
