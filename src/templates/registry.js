@@ -184,6 +184,17 @@ export const TEMPLATES = [
     categoryLabel: 'Walima & Reception',
     description: 'Black-tie luxury: Bride in heavily embellished rose-gold bridal gown and groom in classic tuxedo, hanging candlelight lanterns, deep plum dahlias, and royal banquet itinerary.',
     palette: ['#280811', '#D4AF37', '#FAF5EE'],
+    contactTheme: {
+      sectionBg: '#FAF5EE',
+      text: '#280811',
+      label: '#7A5A1E',
+      cardBg: '#FFFFFF',
+      cardBorder: '#D4AF37',
+      callBg: '#280811',
+      callText: '#FAF5EE',
+      waBg: '#D4AF37',
+      waText: '#280811',
+    },
     thumbnail: '/assets/reception-couple.jpg',
     slots: {
       intro_image: { label: 'Intro Gate Couple Artwork (Circular)', default: '/assets/couple-golden-intro.jpg' },

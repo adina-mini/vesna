@@ -52,11 +52,10 @@ export default function PublicInviteWrapper({ template: initialTemplate, templat
 
       {/* 2. Invitation Card with smooth luxury scale/fade reveal */}
       <div
-        className={`w-full min-h-screen transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${
-          cardRevealed
+        className={`w-full min-h-screen transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${cardRevealed
             ? 'opacity-100 scale-100 filter-none'
             : 'opacity-0 scale-[0.985] blur-[1px]'
-        }`}
+          }`}
       >
         <TemplateComponent
           data={personalizedData}
@@ -65,8 +64,7 @@ export default function PublicInviteWrapper({ template: initialTemplate, templat
           suppressIntro={true}
         />
         {/* Direct Call & WhatsApp Contact Bar */}
-        <FamilyContactBar contacts={personalizedData?.contacts || []} />
-      </div>
+        <FamilyContactBar contacts={personalizedData?.contacts || []} theme={template?.contactTheme} />      </div>
     </div>
   );
 }
